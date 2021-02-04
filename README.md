@@ -7,7 +7,21 @@ For example, today a ZSET usage would be `ZSET ages 20 22 23 25` while ages is t
 The main use case is for dots on maps, where we would like to store a list of dots on a polygon, and know when a dot (x, y) is crossing that certain set.
 Let's say we have a square, and we want to to check, if our dot interacts with a square in the map.
 
-# Refs:
+## Commands
+
+### iscreate
+Creating a new interval set, icreate mySet <sets>. while sets are not required on creation.
+
+### isadd
+Adding a new set to existing interval set, iadd mySet <set>.
+  
+### isremove
+Removing a set from an interval, isremove mySet
+
+### findSet
+Finding if a set exists in interval set, isfind mySet <set>. while set is represented as (x, y). i.e. isfind mySet (0, 12)
+
+## Refs:
 
 1. https://github.com/redis/redis/pull/1528
 2. https://github.com/redis/redis/pull/2979
