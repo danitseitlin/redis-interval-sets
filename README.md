@@ -15,17 +15,22 @@ Filtering for the value 11, will results in returning 2 available sets: preschoo
 ## Commands
 
 ### iadd
+```
 iadd <key> <set name> <min interval> <max interval>
-i.e. iadd ages highschool 12 18
+example: iadd ages highschool 12 18
+```
 
 ### iremove
-iremove <key> <set name>
-i.e. iremove <key> <set name>
-
+```
+iremove <key> <set name>` <br>
+example: iremove <key> <set name>
+```
+  
 ### ifilter 
-ifilter <key> <interval> 
-i.e. ifilter ages 15
-
+```
+ifilter <key> <interval>` <br>
+example: ifilter ages 15
+```
 
 ## Refs:
 
