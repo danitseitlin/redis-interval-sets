@@ -1,25 +1,31 @@
 # RedisIntervalSets
 ## What are Interval sets?
-Interval sets are similar to ZSET command of Redis, but are more for holding a set of items that are not singular (1 value) but are (x, y) parameters.
-For example, today a ZSET usage would be `ZSET ages 20 22 23 25` while ages is the key (let's call it subject of the items inside it) and it basically has a list of ages (20, 22, 23, 25).
-
-## Use case
-The main use case is for dots on maps, where we would like to store a list of dots on a polygon, and know when a dot (x, y) is crossing that certain set.
-Let's say we have a square, and we want to to check, if our dot interacts with a square in the map.
+Interval sets are similar to ZSET command of Redis, but unlike ZSET's it's a range of number per set, an interval.
+For example let's say we have a key called ages, that holds free sets of age ranges, pre school, highschool, and college.
+We will set it as following:
+```
+iadd ages preschool 6 11
+iadd ages highschool 11 18
+iadd ages college 18 50
+```
+We will result in a key with 3 sets of age ranges.
+Now we want to filter out specific set that hold a number in their range, for i.e. ifilter ages 11
+Filtering for the value 11, will results in returning 2 available sets: preschool and highschool.
 
 ## Commands
 
-### iscreate
-Creating a new interval set, icreate mySet <sets>. while sets are not required on creation.
+### iadd
+iadd <key> <set name> <min interval> <max interval>
+i.e. iadd ages highschool 12 18
 
-### isadd
-Adding a new set to existing interval set, iadd mySet <set>.
-  
-### isremove
-Removing a set from an interval, isremove mySet
+### iremove
+iremove <key> <set name>
+i.e. iremove <key> <set name>
 
-### findSet
-Finding if a set exists in interval set, isfind mySet <set>. while set is represented as (x, y). i.e. isfind mySet (0, 12)
+### ifilter 
+ifilter <key> <interval> 
+i.e. ifilter ages 15
+
 
 ## Refs:
 
