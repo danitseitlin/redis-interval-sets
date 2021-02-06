@@ -38,4 +38,5 @@ redis> ifilter ages 15
 2. https://github.com/redis/redis/pull/2979
 3. https://github.com/redis/redis/pull/3272
 4. https://github.com/redis/redis/pull/3437
+5. https://web.archive.org/web/20171210000653/http://www.starkiller.net/2013/05/03/hacking-redis-adding-interval-sets/
 
