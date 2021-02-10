@@ -22,13 +22,13 @@ redis> IADD ages highschool 12 18
 
 ### IREMOVE
 ```
-IREMOVE <key> <set name>` <br>
+IREMOVE <key> <set name> <br>
 redis> IREMOVE <key> <set name>
 ```
   
 ### IFILTER
 ```
-IFILTER <key> <interval>` <br>
+IFILTER <key> <interval> <br>
 redis> IFILTER ages 15
 ```
 
