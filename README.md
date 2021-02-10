@@ -4,9 +4,9 @@ Interval sets are similar to ZSET command of Redis, but unlike ZSET's it's a ran
 For example let's say we have a key called ages, that holds free sets of age ranges, pre school, highschool, and college.
 We will set it as following:
 ```
-redis> iadd ages preschool 6 11
-redis> iadd ages highschool 11 18
-redis> iadd ages college 18 50
+redis> IADD ages preschool 6 11
+redis> IADD ages highschool 11 18
+redis> IADD ages college 18 50
 ```
 We will result in a key with 3 sets of age ranges.
 Now we want to filter out specific set that hold a number in their range, for i.e. ifilter ages 11
@@ -14,22 +14,22 @@ Filtering for the value 11, will results in returning 2 available sets: preschoo
 
 ## Commands
 
-### iadd
+### IADD
 ```
-iadd <key> <set name> <min interval> <max interval>
-redis> iadd ages highschool 12 18
+IADD <key> <member> <min-score> <max-score> [<member> <min-score> <max-score>...]
+redis> IADD ages highschool 12 18
 ```
 
-### iremove
+### IREMOVE
 ```
-iremove <key> <set name>` <br>
-redis> iremove <key> <set name>
+IREMOVE <key> <set name>` <br>
+redis> IREMOVE <key> <set name>
 ```
   
-### ifilter 
+### IFILTER
 ```
-ifilter <key> <interval>` <br>
-redis> ifilter ages 15
+IFILTER <key> <interval>` <br>
+redis> IFILTER ages 15
 ```
 
 ## Refs:
