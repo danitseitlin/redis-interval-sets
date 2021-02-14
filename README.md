@@ -20,18 +20,17 @@ IADD <key> <member> <min-score> <max-score> [<member> <min-score> <max-score>...
 redis> IADD ages highschool 12 18
 ```
 
-### IREMOVE
-```
-IREMOVE <key> <set name> <br>
-redis> IREMOVE <key> <set name>
-```
-  
 ### IFILTER
 ```
-IFILTER <key> <interval> <br>
+IFILTER <key> <interval>
 redis> IFILTER ages 15
 ```
 
+### IREMOVE
+```
+IREMOVE <key> <set name> [<set name>...]
+redis> IREMOVE ages highschool
+```
 ## Refs:
 
 1. https://github.com/redis/redis/pull/1528
