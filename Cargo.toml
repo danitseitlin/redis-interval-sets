@@ -1,0 +1,23 @@
+[package]
+name = "redisintervalsets"
+version = "1.0.0"
+authors = ["Dani Tseitlin <dani.tseitlin@gmail.com>"]
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+name = "rejson"
+
+[dependencies]
+bson = "0.14"
+serde_json = "1.0"
+serde = "1.0"
+libc = "0.2"
+redis-module = { version="0.11", features = ["experimental-api"]}
+redisearch_api = "0.5"
+
+[features]
+# Workaround to allow cfg(feature = "test") in redismodue-rs dependencies:
+# https://github.com/RedisLabsModules/redismodule-rs/pull/68
+# This requires running the tests with `--features test`
+test = ["redis-module/test"]
