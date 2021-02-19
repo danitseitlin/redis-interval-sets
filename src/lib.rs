@@ -22,7 +22,6 @@ mod schema; // TODO: Remove
 use crate::array_index::ArrayIndex;
 use crate::commands::index;
 use crate::error::Error;
-use crate::redisjson::{Format, Path, RedisJSON, SetOptions, ValueIndex};
 
 pub const VERSION: i32 = 1;
 
@@ -48,29 +47,28 @@ static RIS_TYPE: RedisType = RedisType::new(
     },
 );
 
-///
-/// Backwards compatibility convertor for RedisJSON 1.x clients
-///
+fn is_add() 
 
+fn is_del()
 
+fn is_filter()
 
 //////////////////////////////////////////////////////
 
 pub extern "C" fn init(raw_ctx: *mut rawmod::RedisModuleCtx) -> c_int {
     crate::commands::index::schema_map::init();
-    redisearch_api::init(raw_ctx)
 }
 
 redis_module! {
     name: "RedisIntervalSets",
     version: 99_99_99,
     data_types: [
-        REDIS_JSON_TYPE,
+        RIS_TYPE,
     ],
     init: init,
     commands: [
-        ["iadd", json_del, "write", 1,1,1],
-        ["ifilter", json_get, "readonly", 1,1,1],
-        ["idel", json_mget, "write", 1,1,1]
+        ["is.add", is_add, "write", 1,1,1],
+        ["is.filter", is_filter, "readonly", 1,1,1],
+        ["is.del", is_del, "write", 1,1,1]
     ],
 }
