@@ -83,7 +83,7 @@ fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
     let key = ctx.open_key(&key);
 
     let value = match key.get_value::<IntervalSetType>(&IntervalSetType)? {
-        Some(value) => value.data.as_str().into(),
+        Some(value) => value.sets.as_str().into(),
         None => ().into(),
     };
 
