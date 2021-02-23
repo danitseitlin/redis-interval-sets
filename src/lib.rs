@@ -16,7 +16,7 @@ struct SetType {
     max_score: Number
 }
 
-static MY_REDIS_TYPE: RedisType = RedisType::new(
+static REDIS_INTERVAL_SETS: RedisType = RedisType::new(
     "IntervalSetType",
     0,
     raw::RedisModuleTypeMethods {
@@ -51,14 +51,14 @@ fn is_add(ctx: &Context, args: Vec<String>) -> RedisResult {
 
     let key = ctx.open_key_writable(&key);
     
-    match key.get_value::<IntervalSetType>(&IntervalSetType)? {
+    match key.get_value::<IntervalSetType>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
             value.sets.push({
                 member: member,
                 min_score: min_score,
                 max_score: max_score
             })
-            key.set_value(&IntervalSetType, value)?;
+            key.set_value(&REDIS_INTERVAL_SETS, value)?;
         }
         None => {
             let value = IntervalSetType {
@@ -69,7 +69,7 @@ fn is_add(ctx: &Context, args: Vec<String>) -> RedisResult {
                 }
             };
 
-            key.set_value(&IntervalSetType, value)?;
+            key.set_value(&REDIS_INTERVAL_SETS, value)?;
         }
     }
 
@@ -82,7 +82,7 @@ fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
 
     let key = ctx.open_key(&key);
 
-    let value = match key.get_value::<IntervalSetType>(&IntervalSetType)? {
+    let value = match key.get_value::<IntervalSetType>(&REDIS_INTERVAL_SETS)? {
         Some(value) => value.sets.as_str().into(),
         None => ().into(),
     };
@@ -136,8 +136,7 @@ redis_module! {
     name: "interval_set",
     version: 1,
     data_types: [
-        IntervalSetType,
-        SetType
+        REDIS_INTERVAL_SETS
     ],
     commands: [
         ["is.add", is_add, "write", 1, 1, 1],
