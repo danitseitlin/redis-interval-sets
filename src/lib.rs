@@ -2,22 +2,24 @@
 extern crate redis_module;
 
 use redis_module::native_types::RedisType;
-use redis_module::{raw, Context, NextArg, RedisResult};
+use redis_module::{raw, Context, NextArg, RedisResult, RedisValue};
+//use redis_module::{RedisValue};//RedisValue::SimpleStringStatic;
+//use redis_module::RedisValue::Null;
 use std::os::raw::c_void;
 
 #[derive(Debug)]
-struct IntervalSetType {
-    sets: SetType[]
+struct Set {
+    member: String,
+    min_score: i64,
+    max_score: i64
 }
 
-struct SetType {
-    member: String,
-    min_score: Number,
-    max_score: Number
+struct IntervalSet {
+    sets: Vec<Set>
 }
 
 static REDIS_INTERVAL_SETS: RedisType = RedisType::new(
-    "IntervalSetType",
+    "IntervlSt",
     0,
     raw::RedisModuleTypeMethods {
         version: raw::REDISMODULE_TYPE_METHOD_VERSION as u64,
@@ -38,7 +40,7 @@ static REDIS_INTERVAL_SETS: RedisType = RedisType::new(
 );
 
 unsafe extern "C" fn free(value: *mut c_void) {
-    Box::from_raw(value as *mut IntervalSetType);
+    Box::from_raw(value as *mut IntervalSet);
 }
 
 
@@ -51,29 +53,29 @@ fn is_add(ctx: &Context, args: Vec<String>) -> RedisResult {
 
     let key = ctx.open_key_writable(&key);
     
-    match key.get_value::<IntervalSetType>(&REDIS_INTERVAL_SETS)? {
+    match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
-            value.sets.push({
+            value.sets.push(Set {
                 member: member,
                 min_score: min_score,
                 max_score: max_score
-            })
+            });
             key.set_value(&REDIS_INTERVAL_SETS, value)?;
         }
         None => {
-            let value = IntervalSetType {
-                sets: {
+            let value = IntervalSet {
+                sets: vec![Set {
                     member: member,
                     min_score: min_score,
                     max_score: max_score
-                }
+                }]
             };
 
             key.set_value(&REDIS_INTERVAL_SETS, value)?;
         }
     }
 
-    Ok(size.into())
+    Ok(RedisValue::SimpleStringStatic("OK"))
 }
 
 fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
@@ -82,12 +84,19 @@ fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
 
     let key = ctx.open_key(&key);
 
-    let value = match key.get_value::<IntervalSetType>(&REDIS_INTERVAL_SETS)? {
-        Some(value) => value.sets.as_str().into(),
-        None => ().into(),
+    /*let value = */return match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
+        Some(value) => {
+            //const count = value.sets.len()
+            let sets: Vec<RedisValue> = vec![];
+            for set in value.sets.iter() {
+                let member = &set.member;
+                sets.push(RedisValue::BulkString(member.to_string()))//[set.member, set.min_score.to_string(), set.max_score.to_string()]);
+            }
+            return Ok(RedisValue::Array(sets).into());
+        },
+        None => Ok(RedisValue::Null)
     };
-
-    Ok(value)
+    //Ok(value)
 }
 
 /*
@@ -105,7 +114,7 @@ fn alloc_set(ctx: &Context, args: Vec<String>) -> RedisResult {
             value.data = "B".repeat(size as usize);
         }
         None => {
-            let value = IntervalSetType {
+            let value = IntervalSet {
                 data: "A".repeat(size as usize),
             };
 
@@ -122,7 +131,7 @@ fn alloc_get(ctx: &Context, args: Vec<String>) -> RedisResult {
 
     let key = ctx.open_key(&key);
 
-    let value = match key.get_value::<IntervalSetType>(&MY_REDIS_TYPE)? {
+    let value = match key.get_value::<IntervalSet>(&MY_REDIS_TYPE)? {
         Some(value) => value.data.as_str().into(),
         None => ().into(),
     };
