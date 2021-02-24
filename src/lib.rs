@@ -84,19 +84,17 @@ fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
 
     let key = ctx.open_key(&key);
 
-    /*let value = */return match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
+    return match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
             //const count = value.sets.len()
-            let sets: Vec<RedisValue> = vec![];
-            for set in value.sets.iter() {
-                let member = &set.member;
-                sets.push(RedisValue::BulkString(member.to_string()))//[set.member, set.min_score.to_string(), set.max_score.to_string()]);
-            }
-            return Ok(RedisValue::Array(sets).into());
+            //let sets: Vec<RedisValue> = vec![];
+            //for set in value.sets.iter() {
+            //    sets.push(RedisValue::BulkString(set.member))//[set.member, set.min_score.to_string(), set.max_score.to_string()]);
+            //}
+            return Ok(RedisValue::Array(value.sets));
         },
         None => Ok(RedisValue::Null)
     };
-    //Ok(value)
 }
 
 /*
