@@ -2,10 +2,10 @@
 extern crate redis_module;
 
 use redis_module::native_types::RedisType;
-use redis_module::{raw, Context, NextArg, RedisResult, RedisValue, REDIS_OK};
+use redis_module::{raw, Context, NextArg, RedisError, RedisResult, RedisValue, REDIS_OK};
 use std::os::raw::c_void;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 struct Set {
     member: String,
     min_score: i64,
@@ -41,27 +41,42 @@ unsafe extern "C" fn free(value: *mut c_void) {
     Box::from_raw(value as *mut IntervalSet);
 }
 
+fn get_sets<A: NextArg>(mut args: A) -> Result<Vec<Set>, RedisError> {
+    let mut sets = vec![];
+
+    while let Ok(member) = args.next_string() {
+        let set = Set {
+            member,
+            // If the user supplied a member, they must provide scores as well:
+            min_score: args.next_i64()?,
+            max_score: args.next_i64()?,
+        };
+        sets.push(set);
+    }
+
+    Ok(sets)
+}
+
 fn is_add(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
     let key = args.next_string()?;
 
-    let set = Set {
-        member: args.next_string()?,
-        min_score: args.next_i64()?,
-        max_score: args.next_i64()?,
-    };
+    let sets = get_sets(&mut args)?;
+    if sets.is_empty() {
+        return Err(RedisError::WrongArity);
+    }
 
     let key = ctx.open_key_writable(&key);
 
     match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
             println!("Count of items before new item: {}", value.sets.len());
-            value.sets.push(set);
+            value.sets.extend(sets);
             println!("Count of items: {}", value.sets.len());
         }
         None => {
             println!("Creating a new key");
-            let value = IntervalSet { sets: vec![set] };
+            let value = IntervalSet { sets };
             println!("Count of items: {}", value.sets.len());
             key.set_value(&REDIS_INTERVAL_SETS, value)?;
         }
