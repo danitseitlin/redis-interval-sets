@@ -9,11 +9,11 @@ use std::os::raw::c_void;
 struct Set {
     member: String,
     min_score: i64,
-    max_score: i64
+    max_score: i64,
 }
 
 struct IntervalSet {
-    sets: Vec<Set>
+    sets: Vec<Set>,
 }
 
 static REDIS_INTERVAL_SETS: RedisType = RedisType::new(
@@ -49,13 +49,13 @@ fn is_add(ctx: &Context, args: Vec<String>) -> RedisResult {
     let max_score = args.next_i64()?;
 
     let key = ctx.open_key_writable(&key);
-    
+
     match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
             let set = Set {
                 member: member,
                 min_score: min_score,
-                max_score: max_score
+                max_score: max_score,
             };
             println!("Count of items before new item: {}", value.sets.len());
             value.sets.push(set);
@@ -63,15 +63,13 @@ fn is_add(ctx: &Context, args: Vec<String>) -> RedisResult {
         }
         None => {
             println!("Creating a new key");
-            let mut value = IntervalSet {
-                sets: vec![]
-            };
+            let mut value = IntervalSet { sets: vec![] };
             value.sets.push(Set {
                 member: member,
                 min_score: min_score,
-                max_score: max_score
+                max_score: max_score,
             });
-            
+
             println!("Count of items: {}", value.sets.len());
             key.set_value(&REDIS_INTERVAL_SETS, value)?;
         }
@@ -95,9 +93,9 @@ fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
                 println!("Found member {}", set.member);
                 sets.push(RedisValue::SimpleString(set.member.clone()))
             }
-            return Ok(RedisValue::Array(sets))
-        },
-        None => Ok(RedisValue::Null)
+            return Ok(RedisValue::Array(sets));
+        }
+        None => Ok(RedisValue::Null),
     };
 }
 
@@ -116,8 +114,8 @@ fn is_filter(ctx: &Context, args: Vec<String>) -> RedisResult {
                 }
             }
             Ok(RedisValue::Array(list))
-        },
-        None => Ok(RedisValue::Null)
+        }
+        None => Ok(RedisValue::Null),
     };
 }
 
