@@ -90,24 +90,37 @@ fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
     let key = args.next_string()?;
 
     let key = ctx.open_key(&key);
+
     println!("is.get on key");
 
     match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
-            let sets: Vec<_> = value
-                .sets
-                .iter()
-                .filter(|_set| true)
-                .map(|set| set.member.clone())
-                .collect();
+            if let Ok(member) = args.next_string() {
+                let sets: Vec<_> = value
+                    .sets
+                    .iter()
+                    .filter(|set| set.member == member)
+                    .map(|set| vec![set.min_score.clone().to_string(), set.max_score.clone().to_string()])
+                    .collect();
 
-            return Ok(sets.into());
+                return Ok(sets.into());
+            }
+            else {
+                let sets: Vec<_> = value
+                    .sets
+                    .iter()
+                    .filter(|_set| true)
+                    .map(|set| vec![set.member.clone(), set.min_score.clone().to_string(), set.max_score.clone().to_string()])
+                    .collect();
+
+                return Ok(sets.into());
+            }
         }
         None => Ok(().into()),
     }
 }
 
-fn is_filter(ctx: &Context, args: Vec<String>) -> RedisResult {
+fn is_find(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
     let key = args.next_string()?;
     let score = args.next_i64()?;
@@ -138,7 +151,7 @@ redis_module! {
     commands: [
         ["is.set", is_set, "write", 1, 1, 1],
         ["is.get", is_get, "readonly", 1, 1, 1],
-        ["is.filter", is_filter, "readonly", 1, 1, 1]
+        ["is.find", is_find, "readonly", 1, 1, 1]
     ],
 }
 
