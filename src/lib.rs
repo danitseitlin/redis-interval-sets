@@ -2,7 +2,7 @@
 extern crate redis_module;
 
 use redis_module::native_types::RedisType;
-use redis_module::{raw, Context, NextArg, RedisError, RedisResult, RedisValue, REDIS_OK};
+use redis_module::{raw, Context, NextArg, RedisError, RedisResult, REDIS_OK};
 use std::os::raw::c_void;
 
 #[derive(Debug, PartialEq)]
@@ -57,7 +57,7 @@ fn get_sets<A: NextArg>(mut args: A) -> Result<Vec<Set>, RedisError> {
     Ok(sets)
 }
 
-fn is_add(ctx: &Context, args: Vec<String>) -> RedisResult {
+fn is_set(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
     let key = args.next_string()?;
 
@@ -94,19 +94,10 @@ fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
 
     match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
-            println!("Fetching all sets for key");
-
-            let mut sets = vec![];
-            println!("Sets: {}", value.sets.len());
-            for set in value.sets.iter() {
-                println!("Found member {}", set.member);
-                sets.push(set.member.clone())
-            }
-
             let sets: Vec<_> = value
                 .sets
                 .iter()
-                .filter(|set| true)
+                .filter(|_set| true)
                 .map(|set| set.member.clone())
                 .collect();
 
@@ -124,15 +115,15 @@ fn is_filter(ctx: &Context, args: Vec<String>) -> RedisResult {
 
     return match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
-            let mut list: Vec<RedisValue> = vec![];
-            for set in value.sets.iter() {
-                if set.min_score <= score && set.max_score >= score {
-                    list.push(RedisValue::SimpleString(set.member.clone()))
-                }
-            }
-            Ok(RedisValue::Array(list))
+            let sets: Vec<_> = value
+                .sets
+                .iter()
+                .filter(|set| set.min_score <= score && set.max_score >= score)
+                .map(|set| set.member.clone())
+                .collect();
+            Ok(sets.into())
         }
-        None => Ok(RedisValue::Null),
+        None => Ok(().into()),
     };
 }
 
@@ -145,7 +136,7 @@ redis_module! {
         REDIS_INTERVAL_SETS
     ],
     commands: [
-        ["is.add", is_add, "write", 1, 1, 1],
+        ["is.set", is_set, "write", 1, 1, 1],
         ["is.get", is_get, "readonly", 1, 1, 1],
         ["is.filter", is_filter, "readonly", 1, 1, 1]
     ],
