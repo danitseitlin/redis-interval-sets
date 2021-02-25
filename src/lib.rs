@@ -3,8 +3,6 @@ extern crate redis_module;
 
 use redis_module::native_types::RedisType;
 use redis_module::{raw, Context, NextArg, RedisResult, RedisValue};
-//use redis_module::{RedisValue};//RedisValue::SimpleStringStatic;
-//use redis_module::RedisValue::Null;
 use std::os::raw::c_void;
 
 #[derive(Debug)]
@@ -43,7 +41,6 @@ unsafe extern "C" fn free(value: *mut c_void) {
     Box::from_raw(value as *mut IntervalSet);
 }
 
-
 fn is_add(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
     let key = args.next_string()?;
@@ -55,22 +52,27 @@ fn is_add(ctx: &Context, args: Vec<String>) -> RedisResult {
     
     match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
+            let set = Set {
+                member: member,
+                min_score: min_score,
+                max_score: max_score
+            };
+            println!("Count of items before new item: {}", value.sets.len());
+            value.sets.push(set);
+            println!("Count of items: {}", value.sets.len());
+        }
+        None => {
+            println!("Creating a new key");
+            let mut value = IntervalSet {
+                sets: vec![]
+            };
             value.sets.push(Set {
                 member: member,
                 min_score: min_score,
                 max_score: max_score
             });
-            key.set_value(&REDIS_INTERVAL_SETS, value)?;
-        }
-        None => {
-            let value = IntervalSet {
-                sets: vec![Set {
-                    member: member,
-                    min_score: min_score,
-                    max_score: max_score
-                }]
-            };
-
+            
+            println!("Count of items: {}", value.sets.len());
             key.set_value(&REDIS_INTERVAL_SETS, value)?;
         }
     }
@@ -83,59 +85,41 @@ fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
     let key = args.next_string()?;
 
     let key = ctx.open_key(&key);
-
+    println!("is.get on key");
     return match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
-            //const count = value.sets.len()
-            //let sets: Vec<RedisValue> = vec![];
-            //for set in value.sets.iter() {
-            //    sets.push(RedisValue::BulkString(set.member))//[set.member, set.min_score.to_string(), set.max_score.to_string()]);
-            //}
-            return Ok(RedisValue::Array(value.sets))
+            println!("Fetching all sets for key");
+            let mut sets: Vec<RedisValue> = vec![];
+            println!("Sets: {}", value.sets.len());
+            for set in value.sets.iter() {
+                println!("Found member {}", set.member);
+                sets.push(RedisValue::SimpleString(set.member.clone()))
+            }
+            return Ok(RedisValue::Array(sets))
         },
         None => Ok(RedisValue::Null)
     };
 }
 
-/*
-fn alloc_set(ctx: &Context, args: Vec<String>) -> RedisResult {
+fn is_filter(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
     let key = args.next_string()?;
-    let size = args.next_i64()?;
-
-    ctx.log_debug(format!("key: {}, size: {}", key, size).as_str());
-
-    let key = ctx.open_key_writable(&key);
-
-    match key.get_value::<MY_REDIS_TYPE>(&MY_REDIS_TYPE)? {
-        Some(value) => {
-            value.data = "B".repeat(size as usize);
-        }
-        None => {
-            let value = IntervalSet {
-                data: "A".repeat(size as usize),
-            };
-
-            key.set_value(&MY_REDIS_TYPE, value)?;
-        }
-    }
-
-    Ok(size.into())
-}
-
-fn alloc_get(ctx: &Context, args: Vec<String>) -> RedisResult {
-    let mut args = args.into_iter().skip(1);
-    let key = args.next_string()?;
-
+    let score = args.next_i64()?;
     let key = ctx.open_key(&key);
 
-    let value = match key.get_value::<IntervalSet>(&MY_REDIS_TYPE)? {
-        Some(value) => value.data.as_str().into(),
-        None => ().into(),
+    return match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
+        Some(value) => {
+            let mut list: Vec<RedisValue> = vec![];
+            for set in value.sets.iter() {
+                if set.min_score <= score && set.max_score >= score {
+                    list.push(RedisValue::SimpleString(set.member.clone()))
+                }
+            }
+            Ok(RedisValue::Array(list))
+        },
+        None => Ok(RedisValue::Null)
     };
-
-    Ok(value)
-}*/
+}
 
 //////////////////////////////////////////////////////
 
@@ -147,8 +131,7 @@ redis_module! {
     ],
     commands: [
         ["is.add", is_add, "write", 1, 1, 1],
-        ["is.get", is_get, "readonly", 1, 1, 1]
-        //["alloc.set", alloc_set, "write", 1, 1, 1],
-        //["alloc.get", alloc_get, "readonly", 1, 1, 1],
+        ["is.get", is_get, "readonly", 1, 1, 1],
+        ["is.filter", is_filter, "readonly", 1, 1, 1]
     ],
 }
