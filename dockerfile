@@ -6,9 +6,8 @@ ADD . /RedisIntervalSets
 WORKDIR /RedisIntervalSets
 
 # Build the source
+RUN apt-get update && apt-get install libclang-dev
 RUN set -ex ;\
-    sudo apt-get update ;\
-    sudo apt-get install libclang-dev ;\
     cargo build --release ;\
     mv target/release/redisintervalsets.so target/release/ris.so
 
