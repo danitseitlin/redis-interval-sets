@@ -57,6 +57,13 @@ fn get_sets<A: NextArg>(mut args: A) -> Result<Vec<Set>, RedisError> {
     Ok(sets)
 }
 
+fn is_in_score_range(set: &&Set, score: i64) -> bool {
+    if set.min_score <= score && set.max_score >= score {
+        return true;
+    }
+    return false;
+}
+
 fn is_set(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
     let key = args.next_string()?;
@@ -95,7 +102,6 @@ fn is_del(ctx: &Context, args: Vec<String>) -> RedisResult {
         Err(e) => return Err(e),
         Ok(_) => return REDIS_OK
     };
-    //REDIS_OK
 }
 
 fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
@@ -154,7 +160,7 @@ fn is_score(ctx: &Context, args: Vec<String>) -> RedisResult {
             let sets: Vec<_> = value
                 .sets
                 .iter()
-                .filter(|set| set.min_score <= score && set.max_score >= score)
+                .filter(|set| is_in_score_range(set, score) == true)
                 .map(|set| set.member.clone())
                 .collect();
             Ok(sets.into())
@@ -174,7 +180,7 @@ fn is_not_score(ctx: &Context, args: Vec<String>) -> RedisResult {
             let sets: Vec<_> = value
                 .sets
                 .iter()
-                .filter(|set| set.min_score >= score || set.max_score <= score)
+                .filter(|set| is_in_score_range(set, score) == false)
                 .map(|set| set.member.clone())
                 .collect();
             Ok(sets.into())
@@ -193,10 +199,10 @@ redis_module! {
     ],
     commands: [
         ["is.set", is_set, "write", 1, 1, 1],
+        ["is.del", is_del, "write", 1, 1, 1],
         ["is.get", is_get, "readonly", 1, 1, 1],
         ["is.score", is_score, "readonly", 1, 1, 1],
         ["is.not_score", is_not_score, "readonly", 1, 1, 1],
-        ["is.del", is_del, "write", 1, 1, 1]
     ],
 }
 
