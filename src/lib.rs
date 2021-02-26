@@ -57,6 +57,16 @@ fn get_sets<A: NextArg>(mut args: A) -> Result<Vec<Set>, RedisError> {
     Ok(sets)
 }
 
+fn get_members<A: NextArg>(mut args: A) -> Result<Vec<String>, RedisError> {
+    let mut members = vec![];
+
+    while let Ok(member) = args.next_string() {
+        members.push(member);
+    }
+
+    Ok(members)
+}
+
 fn is_in_score_range(set: &&Set, score: i64) -> bool {
     if set.min_score <= score && set.max_score >= score {
         return true;
@@ -95,12 +105,21 @@ fn is_set(ctx: &Context, args: Vec<String>) -> RedisResult {
 fn is_del(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
     let key = args.next_string()?;
-
+    let members = get_members(&mut args)?;
     let key = ctx.open_key_writable(&key);
-    let deleted = key.delete();
-    match deleted {
-        Err(e) => return Err(e),
-        Ok(_) => return REDIS_OK
+    return match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
+        Some(value) => {
+            if members.is_empty() {
+                key.delete()?;
+                return REDIS_OK
+            }
+            for member in members {
+                value.sets
+                    .retain(|set| set.member != member)
+            }
+            return REDIS_OK
+        }
+        None => Ok(().into()),
     };
 }
 
