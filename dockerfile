@@ -5,8 +5,16 @@ ENV LIBDIR /usr/lib/redis/modules
 ADD . /RedisIntervalSets
 WORKDIR /RedisIntervalSets
 
+# Set up a build environment
+RUN set -ex ;\
+	mkdir -p deps ;\
+	cd deps ;\
+	git clone https://github.com/RedisLabsModules/readies.git
+RUN PIP=1 FORCE=1 ./deps/readies/bin/getpy2
+RUN ./system-setup.py
+
 # Build the source
-RUN apt-get update -y && apt-get install libclang-dev -y 
+#RUN apt-get update -y && apt-get install libclang-dev -y 
 RUN set -ex ;\
     cargo build --release ;\
     mv target/release/redisintervalsets.so target/release/ris.so
