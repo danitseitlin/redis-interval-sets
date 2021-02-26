@@ -50,6 +50,7 @@ redis> is.score ages 1
 redis> is.score ages 5
 1) "a"
 2) "b"
+```
 
 ### is.not_score
 ```
