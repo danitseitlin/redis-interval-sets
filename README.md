@@ -25,7 +25,7 @@ redis> is.set ages highschool 12 18
 ### is.get
 ```
 This command returns existing sets and their min & max scores.
-If `set name` is used, it will retrieve the min & max scores of a specific set.
+If set name is used, it will retrieve the min & max scores of a specific set.
 is.get <key> [set name]
 redis> is.get ages
 1) 1) "a"
