@@ -74,3 +74,18 @@ OK
 redis> is.del ages
 OK
 ```
+
+## Build
+```
+cargo build --release
+```
+
+## Run
+### Linux
+```
+redis-server --loadmodule ./target/release/libintervalsets.so
+```
+### Mac OS
+```
+redis-server --loadmodule ./target/release/libintervalsets.dylib
+```
