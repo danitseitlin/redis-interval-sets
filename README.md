@@ -38,10 +38,10 @@ redis> is.get preschool
    2) "11"
 ```
 
-### is.filter
+### is.score
 ```
-is.filter <key> <interval>
-redis> is.filter ages 15
+is.score <key> <interval>
+redis> is.score ages 15
 ```
 
 ### is.del

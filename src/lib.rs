@@ -90,13 +90,12 @@ fn is_del(ctx: &Context, args: Vec<String>) -> RedisResult {
     let key = args.next_string()?;
 
     let key = ctx.open_key_writable(&key);
-
-    match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
-        Some(_value) => key.delete(),
-        None => Ok(().into()),
+    let deleted = key.delete();
+    match deleted {
+        Err(e) => return Err(e),
+        Ok(_) => return REDIS_OK
     };
-
-    REDIS_OK
+    //REDIS_OK
 }
 
 fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
@@ -114,17 +113,27 @@ fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
                     .sets
                     .iter()
                     .filter(|set| set.member == member)
-                    .map(|set| vec![set.min_score.clone().to_string(), set.max_score.clone().to_string()])
+                    .map(|set| {
+                        vec![
+                            set.min_score.clone().to_string(),
+                            set.max_score.clone().to_string(),
+                        ]
+                    })
                     .collect();
 
                 return Ok(sets.into());
-            }
-            else {
+            } else {
                 let sets: Vec<_> = value
                     .sets
                     .iter()
                     .filter(|_set| true)
-                    .map(|set| vec![set.member.clone(), set.min_score.clone().to_string(), set.max_score.clone().to_string()])
+                    .map(|set| {
+                        vec![
+                            set.member.clone(),
+                            set.min_score.clone().to_string(),
+                            set.max_score.clone().to_string(),
+                        ]
+                    })
                     .collect();
 
                 return Ok(sets.into());
@@ -134,7 +143,7 @@ fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
     }
 }
 
-fn is_find(ctx: &Context, args: Vec<String>) -> RedisResult {
+fn is_score(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
     let key = args.next_string()?;
     let score = args.next_i64()?;
@@ -154,6 +163,26 @@ fn is_find(ctx: &Context, args: Vec<String>) -> RedisResult {
     };
 }
 
+fn is_not_score(ctx: &Context, args: Vec<String>) -> RedisResult {
+    let mut args = args.into_iter().skip(1);
+    let key = args.next_string()?;
+    let score = args.next_i64()?;
+    let key = ctx.open_key(&key);
+
+    return match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
+        Some(value) => {
+            let sets: Vec<_> = value
+                .sets
+                .iter()
+                .filter(|set| set.min_score >= score || set.max_score <= score)
+                .map(|set| set.member.clone())
+                .collect();
+            Ok(sets.into())
+        }
+        None => Ok(().into()),
+    };
+}
+
 //////////////////////////////////////////////////////
 
 redis_module! {
@@ -165,7 +194,8 @@ redis_module! {
     commands: [
         ["is.set", is_set, "write", 1, 1, 1],
         ["is.get", is_get, "readonly", 1, 1, 1],
-        ["is.find", is_find, "readonly", 1, 1, 1],
+        ["is.score", is_score, "readonly", 1, 1, 1],
+        ["is.not_score", is_not_score, "readonly", 1, 1, 1],
         ["is.del", is_del, "write", 1, 1, 1]
     ],
 }
