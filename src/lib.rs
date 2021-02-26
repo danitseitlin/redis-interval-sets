@@ -85,6 +85,20 @@ fn is_set(ctx: &Context, args: Vec<String>) -> RedisResult {
     REDIS_OK
 }
 
+fn is_del(ctx: &Context, args: Vec<String>) -> RedisResult {
+    let mut args = args.into_iter().skip(1);
+    let key = args.next_string()?;
+
+    let key = ctx.open_key_writable(&key);
+
+    match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
+        Some(_value) => key.delete(),
+        None => Ok(().into()),
+    };
+
+    REDIS_OK
+}
+
 fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
     let key = args.next_string()?;
@@ -151,7 +165,8 @@ redis_module! {
     commands: [
         ["is.set", is_set, "write", 1, 1, 1],
         ["is.get", is_get, "readonly", 1, 1, 1],
-        ["is.find", is_find, "readonly", 1, 1, 1]
+        ["is.find", is_find, "readonly", 1, 1, 1],
+        ["is.del", is_del, "write", 1, 1, 1]
     ],
 }
 
