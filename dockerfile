@@ -6,6 +6,7 @@ ADD . /RIS
 WORKDIR /RIS
 
 # Set up a build environment
+RUN apt install build-essentials
 RUN git wget clang cmake
 #RUN apt-get update -y && apt install libclang1-10=1:10.0.0-4ubuntu1 libllvm10=1:10.0.0-4ubuntu1
 
