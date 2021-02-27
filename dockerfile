@@ -12,7 +12,7 @@ RUN set -ex ;\
 	git clone https://github.com/RedisLabsModules/readies.git
 RUN PIP=1 FORCE=1 ./deps/readies/bin/getpy2
 RUN ./deps/readies/bin/system-setup.py
-RUN apt-get update -y && apt-get install libclang-dev -y 
+RUN apt-get update -y && apt-get install libclang-dev -y  && apt-get install clang-3.3
 
 # Build the source
 RUN set -ex ;\
