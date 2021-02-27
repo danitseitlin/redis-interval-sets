@@ -6,13 +6,7 @@ ADD . /RIS
 WORKDIR /RIS
 
 # Set up a build environment
-RUN set -ex ;\
-	mkdir -p deps ;\
-	cd deps ;\
-	git clone https://github.com/RedisLabsModules/readies.git
-RUN PIP=1 FORCE=1 ./deps/readies/bin/getpy2
-RUN ./deps/readies/bin/system-setup.py
-RUN rustc --version
+RUN git wget clang cmake
 #RUN apt-get update -y && apt install libclang1-10=1:10.0.0-4ubuntu1 libllvm10=1:10.0.0-4ubuntu1
 
 # Build the source
