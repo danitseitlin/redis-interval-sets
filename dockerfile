@@ -10,8 +10,8 @@ RUN set -ex ;\
 	mkdir -p deps ;\
 	cd deps ;\
 	git clone https://github.com/RedisLabsModules/readies.git
-RUN PIP=1 FORCE=1 ./deps/readies/bin/getpy2 && ls ./deps
-RUN ls ./system-setup.py
+RUN PIP=1 FORCE=1 ./deps/readies/bin/getpy2
+RUN ./deps/readies/bin/system-setup.py
 
 # Build the source
 #RUN apt-get update -y && apt-get install libclang-dev -y 
