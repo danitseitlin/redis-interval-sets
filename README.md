@@ -1,4 +1,4 @@
-# RedisIntervalSets
+# Redis Interval Sets
 ## What are Interval sets?
 Interval sets are similar to ZSET command of Redis, but unlike ZSET's it's a range of number per set, an interval.
 For example let's say we have a key called ages, that holds free sets of age ranges, pre school, highschool, and college.
@@ -8,8 +8,17 @@ redis> is.set ages preschool 6 11
 redis> is.set ages highschool 11 18 college 18 50
 ```
 We will result in a key with 3 sets of age ranges.
-Now we want to filter out specific set that hold a number in their range, for i.e. ifilter ages 11
+Now we want to filter out specific set that hold a number in their range, for i.e. `is.score ages 11`
 Filtering for the value 11, will results in returning 2 available sets: preschool and highschool.
+
+## Primary features
+* Creating interval sets with min and max scores
+* Ability to filter out sets by score range
+
+## Quick Start
+```
+docker run -p 6379:6379 --name ris danitseitlin/redis-interval-sets:latest
+```
 
 ## Commands
 
@@ -92,3 +101,15 @@ redis-server --loadmodule ./target/release/libintervalsets.so
 ```
 redis-server --loadmodule ./target/release/libintervalsets.dylib
 ```
+
+## Client libraries
+Some languages have client libraries that provide support for RedisIntervalSet's commands:
+
+| Project                                    | Language   | License      | Author                                                  | Stars                                               | Package                          |
+| ------------------------------------------ | ---------- | ------------ | ------------------------------------------------------- | --------------------------------------------------- | -------------------------------- |
+| [redis-modules-sdk][redis-modules-sdk-url] | Typescript | BSD-3-Clause | [Dani Tseiltin @danitseitlin][redis-modules-sdk-author] | [![redis-modules-sdk-stars]][redis-modules-sdk-url] | [npm][redis-modules-sdk-package] |
+
+[redis-modules-sdk-author]: https://github.com/danitseitlin/
+[redis-modules-sdk-url]: https://github.com/danitseitlin/redis-modules-sdk
+[redis-modules-sdk-package]: https://www.npmjs.com/package/redis-modules-sdk
+[redis-modules-sdk-stars]: https://img.shields.io/github/stars/danitseitlin/redis-modules-sdk.svg?style=social&amp;label=Star&amp;maxAge=2592000
