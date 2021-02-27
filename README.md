@@ -112,4 +112,4 @@ Some languages have client libraries that provide support for RedisIntervalSet's
 [redis-modules-sdk-author]: https://github.com/danitseitlin/
 [redis-modules-sdk-url]: https://github.com/danitseitlin/redis-modules-sdk
 [redis-modules-sdk-package]: https://www.npmjs.com/package/redis-modules-sdk
-[redis-modules-sdk-stars]: https://img.shields.io/github/stars/danitseitlin/redis-modules-sdk.svg?style=social&amp;label=Star&amp;maxAge=2592000
+[redis-modules-sdk-stars]: https://img.shields.io/github/stars/danitseitlin/redis-modules-sdk.svg?style=social&amp;label=Star
