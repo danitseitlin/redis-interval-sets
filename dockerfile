@@ -7,8 +7,6 @@ WORKDIR /RIS
 
 # Set up a build environment
 RUN apt-get update -y && apt-get install git wget clang cmake -y
-#RUN git clone https://github.com/llvm-mirror/clang.git && cd clang && cmake
-#RUN apt-get update -y && apt install libclang1-10=1:10.0.0-4ubuntu1 libllvm10=1:10.0.0-4ubuntu1
 
 # Build the source
 RUN set -ex ;\
