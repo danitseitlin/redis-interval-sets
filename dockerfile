@@ -13,7 +13,7 @@ RUN apt-get update -y && apt-get install git wget clang cmake -y
 # Build the source
 RUN set -ex ;\
     cargo build --release ;\
-    mv ./target/release/redisintervalsets.so ./target/release/ris.so
+    mv target/release/libintervalsets.so target/release/ris.so
 
 # Package the runner
 FROM redis:latest
