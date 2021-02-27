@@ -111,13 +111,12 @@ fn is_del(ctx: &Context, args: Vec<String>) -> RedisResult {
         Some(value) => {
             if members.is_empty() {
                 key.delete()?;
-                return REDIS_OK
+                return REDIS_OK;
             }
             for member in members {
-                value.sets
-                    .retain(|set| set.member != member)
+                value.sets.retain(|set| set.member != member)
             }
-            return REDIS_OK
+            return REDIS_OK;
         }
         None => Ok(().into()),
     };
