@@ -1,4 +1,3 @@
-# Redis Interval Sets
 ## What are Interval sets :question:
 Interval sets are similar to ZSET command of Redis, but unlike ZSET's it's a range of number per set, an interval.
 For example let's say we have a key called ages, that holds free sets of age ranges, pre school, highschool, and college.
