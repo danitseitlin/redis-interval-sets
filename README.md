@@ -106,7 +106,7 @@ Some languages have client libraries that provide support for RedisIntervalSet's
 
 | Project                                    | Language   | License      | Author                                                  | Stars                                               | Package                          |
 | ------------------------------------------ | ---------- | ------------ | ------------------------------------------------------- | --------------------------------------------------- | -------------------------------- |
-| [redis-modules-sdk][redis-modules-sdk-url] | Typescript | BSD-3-Clause | [Dani Tseiltin @danitseitlin][redis-modules-sdk-author] | [![redis-modules-sdk-stars]][redis-modules-sdk-url] | [npm][redis-modules-sdk-package] |
+| [redis-modules-sdk][redis-modules-sdk-url] | Typescript | BSD-3-Clause | [Dani Tseitlin @danitseitlin][redis-modules-sdk-author] | [![redis-modules-sdk-stars]][redis-modules-sdk-url] | [npm][redis-modules-sdk-package] |
 
 [redis-modules-sdk-author]: https://github.com/danitseitlin/
 [redis-modules-sdk-url]: https://github.com/danitseitlin/redis-modules-sdk
