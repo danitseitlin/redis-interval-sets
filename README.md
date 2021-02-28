@@ -1,5 +1,5 @@
 # Redis Interval Sets
-## What are Interval sets? :question:
+## What are Interval sets :question:
 Interval sets are similar to ZSET command of Redis, but unlike ZSET's it's a range of number per set, an interval.
 For example let's say we have a key called ages, that holds free sets of age ranges, pre school, highschool, and college.
 We will set it as following:
@@ -11,7 +11,7 @@ We will result in a key with 3 sets of age ranges.
 Now we want to filter out specific set that hold a number in their range, for i.e. `iset.score ages 11`
 Filtering for the value 11, will results in returning 2 available sets: preschool and highschool.
 
-## Primary features
+## Primary features :rocket:
 * Creating interval sets with min and max scores
 * Ability to filter out sets by score range
 
