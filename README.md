@@ -4,11 +4,11 @@ Interval sets are similar to ZSET command of Redis, but unlike ZSET's it's a ran
 For example let's say we have a key called ages, that holds free sets of age ranges, pre school, highschool, and college.
 We will set it as following:
 ```
-redis> is.set ages preschool 6 11
-redis> is.set ages highschool 11 18 college 18 50
+redis> iset.add ages preschool 6 11
+redis> iset.add ages highschool 11 18 college 18 50
 ```
 We will result in a key with 3 sets of age ranges.
-Now we want to filter out specific set that hold a number in their range, for i.e. `is.score ages 11`
+Now we want to filter out specific set that hold a number in their range, for i.e. `iset.score ages 11`
 Filtering for the value 11, will results in returning 2 available sets: preschool and highschool.
 
 ## Primary features
@@ -22,21 +22,21 @@ docker run -p 6379:6379 --name ris danitseitlin/redis-interval-sets:latest
 
 ## Commands
 
-### is.set
+### iset.add
 This command sets a new interval set. An interval set can be extended at any time.
 In the command itself we are able to create 1 or more sets at the same command execution.
 Each set **MUST** have a minimum score and a maximum score
 ```
-is.set <key> <set name> <min-score> <max-score> [<set name> <min-score> <max-score>...]
-redis> is.set ages highschool 12 18
+iset.add <key> <set name> <min-score> <max-score> [<set name> <min-score> <max-score>...]
+redis> iset.add ages highschool 12 18
 ```
 
-### is.get
+### iset.get
 ```
 This command returns existing sets and their min & max scores.
 If set name is used, it will retrieve the min & max scores of a specific set.
-is.get <key> [set name]
-redis> is.get ages
+iset.get <key> [set name]
+redis> iset.get ages
 1) 1) "a"
    2) "1"
    3) "5"
@@ -44,43 +44,43 @@ redis> is.get ages
    2) "3"
    3) "65"
 
-redis> is.get ages preschool
+redis> iset.get ages preschool
 1) 1) "6"
    2) "11"
 ```
 
-### is.score
+### iset.score
 ```
 This command searches for existing sets that have the given score in their score range.
 The returned information is the name of the set **ONLY**
-is.score <key> <score>
-redis> is.score ages 1
+iset.score <key> <score>
+redis> iset.score ages 1
 1) "a"
-redis> is.score ages 5
+redis> iset.score ages 5
 1) "a"
 2) "b"
 ```
 
-### is.not_score
+### iset.not_score
 ```
 This command searches for existing sets that don't have the given score in their score range.
 The returned information is the name of the set **ONLY**
-is.not_score <key> <score>
-redis> is.not_score ages 1
+iset.not_score <key> <score>
+redis> iset.not_score ages 1
 1) "b"
-redis> is.not_score ages 5
+redis> iset.not_score ages 5
 (empty list or set)
 
 ```
 
-### is.del
+### iset.del
 ```
 This command can delete a key or a specific set. If no <set name> is passed, the whole list of sets (the key itself) will be removed.
 To remove a sepecific set, we will pass **at least** one set name. 
-is.del <key> [<set name>...]
-redis> is.del ages highschool
+iset.del <key> [<set name>...]
+redis> iset.del ages highschool
 OK
-redis> is.del ages
+redis> iset.del ages
 OK
 ```
 

@@ -128,7 +128,7 @@ fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
 
     let key = ctx.open_key(&key);
 
-    println!("is.get on key");
+    println!("iset.get on key");
 
     match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
@@ -216,11 +216,11 @@ redis_module! {
         REDIS_INTERVAL_SETS
     ],
     commands: [
-        ["is.set", is_set, "write", 1, 1, 1],
-        ["is.del", is_del, "write", 1, 1, 1],
-        ["is.get", is_get, "readonly", 1, 1, 1],
-        ["is.score", is_score, "readonly", 1, 1, 1],
-        ["is.not_score", is_not_score, "readonly", 1, 1, 1],
+        ["iset.add", is_set, "write", 1, 1, 1],
+        ["iset.del", is_del, "write", 1, 1, 1],
+        ["iset.get", is_get, "readonly", 1, 1, 1],
+        ["iset.score", is_score, "readonly", 1, 1, 1],
+        ["iset.not_score", is_not_score, "readonly", 1, 1, 1],
     ],
 }
 
