@@ -1,5 +1,5 @@
 # Redis Interval Sets
-## What are Interval sets?
+## What are Interval sets :question:
 Interval sets are similar to ZSET command of Redis, but unlike ZSET's it's a range of number per set, an interval.
 For example let's say we have a key called ages, that holds free sets of age ranges, pre school, highschool, and college.
 We will set it as following:
@@ -11,16 +11,16 @@ We will result in a key with 3 sets of age ranges.
 Now we want to filter out specific set that hold a number in their range, for i.e. `iset.score ages 11`
 Filtering for the value 11, will results in returning 2 available sets: preschool and highschool.
 
-## Primary features
+## Primary features :rocket:
 * Creating interval sets with min and max scores
 * Ability to filter out sets by score range
 
-## Quick Start
+## Quick Start :fast_forward:
 ```
 docker run -p 6379:6379 --name ris danitseitlin/redis-interval-sets:latest
 ```
 
-## Commands
+## Commands :computer:
 
 ### iset.add
 This command sets a new interval set. An interval set can be extended at any time.
@@ -84,7 +84,7 @@ redis> iset.del ages
 OK
 ```
 
-## Build
+## Build :hammer:
 Make sure you have Rust installed: https://www.rust-lang.org/tools/install
 
 Then, build as usual:
@@ -92,7 +92,7 @@ Then, build as usual:
 cargo build --release
 ```
 
-## Run
+## Run :running_man:
 ### Linux
 ```
 redis-server --loadmodule ./target/release/libintervalsets.so
@@ -102,7 +102,7 @@ redis-server --loadmodule ./target/release/libintervalsets.so
 redis-server --loadmodule ./target/release/libintervalsets.dylib
 ```
 
-## Client libraries
+## Client libraries :books:
 Some languages have client libraries that provide support for RedisIntervalSet's commands:
 
 | Project                                    | Language   | License      | Author                                                  | Stars                                               | Package                          |
