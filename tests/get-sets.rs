@@ -1,3 +1,5 @@
+use main::{Set};
+
 #[test]
 fn test_get_sets_empty() {
     let args = vec![];

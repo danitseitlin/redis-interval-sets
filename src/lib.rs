@@ -1,12 +1,11 @@
 #[macro_use]
 extern crate redis_module;
-
 use redis_module::native_types::RedisType;
 use redis_module::{raw, Context, NextArg, RedisError, RedisResult, REDIS_OK};
 use std::os::raw::c_void;
-
+mod main;
 #[derive(Debug, PartialEq)]
-struct Set {
+pub struct Set {
     member: String,
     min_score: i64,
     max_score: i64,
