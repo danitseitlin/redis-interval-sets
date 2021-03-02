@@ -74,7 +74,7 @@ fn is_in_score_range(set: &&Set, score: i64) -> bool {
     return false;
 }
 
-fn is_set(ctx: &Context, args: Vec<String>) -> RedisResult {
+fn is_add(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
     let key = args.next_string()?;
 
@@ -216,84 +216,10 @@ redis_module! {
         REDIS_INTERVAL_SETS
     ],
     commands: [
-        ["iset.add", is_set, "write", 1, 1, 1],
+        ["iset.add", is_add, "write", 1, 1, 1],
         ["iset.del", is_del, "write", 1, 1, 1],
         ["iset.get", is_get, "readonly", 1, 1, 1],
         ["iset.score", is_score, "readonly", 1, 1, 1],
         ["iset.not_score", is_not_score, "readonly", 1, 1, 1],
     ],
-}
-
-//////////////////////////////////////////////////////
-
-#[test]
-fn test_get_sets_empty() {
-    let args = vec![];
-    let sets = get_sets(args.into_iter());
-    let sets = sets.expect("no sets");
-    assert_eq!(sets, vec![]);
-}
-
-#[test]
-fn test_get_sets_partial1() {
-    let args = vec!["member1".to_string()];
-    let sets = get_sets(args.into_iter());
-    match sets.expect_err("should fail on partial arguments") {
-        RedisError::WrongArity => {}
-        _ => panic!("wrong error"),
-    }
-}
-
-#[test]
-fn test_get_sets_partial2() {
-    let args = vec!["member1".to_string(), "10".to_string()];
-    let sets = get_sets(args.into_iter());
-    match sets.expect_err("should fail on partial arguments") {
-        RedisError::WrongArity => {}
-        _ => panic!("wrong error"),
-    }
-}
-
-#[test]
-fn test_get_sets_single() {
-    let args = vec!["member1".to_string(), "10".to_string(), "20".to_string()];
-    let sets = get_sets(args.into_iter());
-    let sets = sets.expect("one member");
-    assert_eq!(
-        sets,
-        vec![Set {
-            member: "member1".to_string(),
-            min_score: 10,
-            max_score: 20,
-        }]
-    );
-}
-
-#[test]
-fn test_get_sets_multi() {
-    let args = vec![
-        "member1".to_string(),
-        "10".to_string(),
-        "20".to_string(),
-        "member2".to_string(),
-        "30".to_string(),
-        "40".to_string(),
-    ];
-    let sets = get_sets(args.into_iter());
-    let sets = sets.expect("multiple members");
-    assert_eq!(
-        sets,
-        vec![
-            Set {
-                member: "member1".to_string(),
-                min_score: 10,
-                max_score: 20,
-            },
-            Set {
-                member: "member2".to_string(),
-                min_score: 30,
-                max_score: 40,
-            }
-        ]
-    );
 }
