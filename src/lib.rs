@@ -3,7 +3,7 @@ extern crate redis_module;
 use redis_module::native_types::RedisType;
 use redis_module::{raw, Context, NextArg, RedisError, RedisResult, REDIS_OK};
 use std::os::raw::c_void;
-mod main;
+
 #[derive(Debug, PartialEq)]
 pub struct Set {
     member: String,
