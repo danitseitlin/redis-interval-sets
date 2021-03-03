@@ -1,5 +1,4 @@
-mod lib;
-use crate:lib::Set;
+pub use crate::lib::Set;
 
 #[test]
 fn test_get_sets_empty() {
