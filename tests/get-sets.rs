@@ -1,4 +1,4 @@
-use lib::Set;
+use lib::{Set};
 
 #[test]
 fn test_get_sets_empty() {

@@ -5,7 +5,7 @@ use redis_module::{raw, Context, NextArg, RedisError, RedisResult, REDIS_OK};
 use std::os::raw::c_void;
 
 #[derive(Debug, PartialEq)]
-pub struct Set {
+pub mod struct Set {
     member: String,
     min_score: i64,
     max_score: i64,
