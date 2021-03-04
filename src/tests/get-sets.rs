@@ -1,4 +1,5 @@
-pub use crate::lib::Set;
+pub use crate::structs::Set;
+pub use crate::lib::get_sets;
 
 #[test]
 fn test_get_sets_empty() {
