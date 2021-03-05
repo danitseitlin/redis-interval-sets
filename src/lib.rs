@@ -48,7 +48,7 @@ pub fn get_sets<A: NextArg>(mut args: A) -> Result<Vec<Set>, RedisError> {
     Ok(sets)
 }
 
-fn get_members<A: NextArg>(mut args: A) -> Result<Vec<String>, RedisError> {
+pub fn get_members<A: NextArg>(mut args: A) -> Result<Vec<String>, RedisError> {
     let mut members = vec![];
 
     while let Ok(member) = args.next_string() {
