@@ -15,4 +15,4 @@ redis-module = { version="0.12.0", features = ["experimental-api"]}
 # Workaround to allow cfg(feature = "test") in redismodue-rs dependencies:
 # https://github.com/RedisLabsModules/redismodule-rs/pull/68
 # This requires running the tests with `--features test`
- test = ["redis-module/test"]
+test = ["redis-module/test"]

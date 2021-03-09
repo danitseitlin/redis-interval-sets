@@ -319,6 +319,3 @@ fn get_members_multi() {
         vec!["member1".to_string(), "member2".to_string()]
     );
 }
-
-//#[cfg(test)]
-//mod get_sets_test;
