@@ -1,7 +1,6 @@
 #[macro_use]
 extern crate redis_module;
 pub mod structs;
-
 use redis_module::native_types::RedisType;
 use redis_module::{raw, Context, NextArg, RedisError, RedisResult, REDIS_OK};
 use std::os::raw::c_void;
@@ -32,7 +31,7 @@ unsafe extern "C" fn free(value: *mut c_void) {
     Box::from_raw(value as *mut IntervalSet);
 }
 
-pub fn get_sets<A: NextArg>(mut args: A) -> Result<Vec<Set>, RedisError> {
+fn get_sets<A: NextArg>(mut args: A) -> Result<Vec<Set>, RedisError> {
     let mut sets = vec![];
 
     while let Ok(member) = args.next_string() {
@@ -48,7 +47,7 @@ pub fn get_sets<A: NextArg>(mut args: A) -> Result<Vec<Set>, RedisError> {
     Ok(sets)
 }
 
-pub fn get_members<A: NextArg>(mut args: A) -> Result<Vec<String>, RedisError> {
+fn get_members<A: NextArg>(mut args: A) -> Result<Vec<String>, RedisError> {
     let mut members = vec![];
 
     while let Ok(member) = args.next_string() {
@@ -214,3 +213,112 @@ redis_module! {
         ["iset.not_score", is_not_score, "readonly", 1, 1, 1],
     ],
 }
+
+#[test]
+fn get_sets_empty() {
+    let args = vec![];
+    let sets = get_sets(args.into_iter());
+    let sets = sets.expect("no sets");
+    assert_eq!(sets, vec![]);
+}
+
+#[test]
+fn get_sets_partial1() {
+    let args = vec!["member1".to_string()];
+    let sets = get_sets(args.into_iter());
+    match sets.expect_err("should fail on partial arguments") {
+        RedisError::WrongArity => {}
+        _ => panic!("wrong error"),
+    }
+}
+
+#[test]
+fn get_sets_partial2() {
+    let args = vec!["member1".to_string(), "10".to_string()];
+    let sets = get_sets(args.into_iter());
+    match sets.expect_err("should fail on partial arguments") {
+        RedisError::WrongArity => {}
+        _ => panic!("wrong error"),
+    }
+}
+
+#[test]
+fn get_sets_single() {
+    let args = vec!["member1".to_string(), "10".to_string(), "20".to_string()];
+    let sets = get_sets(args.into_iter());
+    let sets = sets.expect("one member");
+    assert_eq!(
+        sets,
+        vec![Set {
+            member: "member1".to_string(),
+            min_score: 10,
+            max_score: 20,
+        }]
+    );
+}
+
+#[test]
+fn get_sets_multi() {
+    let args = vec![
+        "member1".to_string(),
+        "10".to_string(),
+        "20".to_string(),
+        "member2".to_string(),
+        "30".to_string(),
+        "40".to_string(),
+    ];
+    let sets = get_sets(args.into_iter());
+    let sets = sets.expect("multiple members");
+    assert_eq!(
+        sets,
+        vec![
+            Set {
+                member: "member1".to_string(),
+                min_score: 10,
+                max_score: 20,
+            },
+            Set {
+                member: "member2".to_string(),
+                min_score: 30,
+                max_score: 40,
+            }
+        ]
+    );
+}
+
+#[test]
+fn get_members_empty() {
+    let args = vec![];
+    let members = get_members(args.into_iter());
+    let members = members.expect("no members");
+    let empty_list: Vec<String> = vec![];
+    assert_eq!(members, empty_list);
+}
+
+#[test]
+fn get_members_single() {
+    let args = vec!["member1".to_string()];
+    let members = get_members(args.into_iter());
+    let members = members.expect("one member");
+    assert_eq!(
+        members,
+        vec!["member1"]
+    );
+}
+
+#[test]
+fn get_members_multi() {
+    let args = vec![
+        "member1".to_string(),
+        "member2".to_string(),
+    ];
+    let members = get_members(args.into_iter());
+    let members = members.expect("multiple members");
+    assert_eq!(
+        members,
+        vec!["member1".to_string(), "member2".to_string()]
+    );
+}
+
+//#[cfg(test)]
+//mod get_sets_test;
