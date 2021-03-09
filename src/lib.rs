@@ -1,20 +1,10 @@
 #[macro_use]
 extern crate redis_module;
-
+pub mod structs;
 use redis_module::native_types::RedisType;
 use redis_module::{raw, Context, NextArg, RedisError, RedisResult, REDIS_OK};
 use std::os::raw::c_void;
-
-#[derive(Debug, PartialEq)]
-struct Set {
-    member: String,
-    min_score: i64,
-    max_score: i64,
-}
-
-struct IntervalSet {
-    sets: Vec<Set>,
-}
+use structs::{Set, IntervalSet};
 
 static REDIS_INTERVAL_SETS: RedisType = RedisType::new(
     "IntervlSt",
@@ -74,7 +64,7 @@ fn is_in_score_range(set: &&Set, score: i64) -> bool {
     return false;
 }
 
-fn is_set(ctx: &Context, args: Vec<String>) -> RedisResult {
+fn is_add(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
     let key = args.next_string()?;
 
@@ -216,7 +206,7 @@ redis_module! {
         REDIS_INTERVAL_SETS
     ],
     commands: [
-        ["iset.add", is_set, "write", 1, 1, 1],
+        ["iset.add", is_add, "write", 1, 1, 1],
         ["iset.del", is_del, "write", 1, 1, 1],
         ["iset.get", is_get, "readonly", 1, 1, 1],
         ["iset.score", is_score, "readonly", 1, 1, 1],
@@ -224,10 +214,8 @@ redis_module! {
     ],
 }
 
-//////////////////////////////////////////////////////
-
 #[test]
-fn test_get_sets_empty() {
+fn get_sets_empty() {
     let args = vec![];
     let sets = get_sets(args.into_iter());
     let sets = sets.expect("no sets");
@@ -235,7 +223,7 @@ fn test_get_sets_empty() {
 }
 
 #[test]
-fn test_get_sets_partial1() {
+fn get_sets_partial1() {
     let args = vec!["member1".to_string()];
     let sets = get_sets(args.into_iter());
     match sets.expect_err("should fail on partial arguments") {
@@ -245,7 +233,7 @@ fn test_get_sets_partial1() {
 }
 
 #[test]
-fn test_get_sets_partial2() {
+fn get_sets_partial2() {
     let args = vec!["member1".to_string(), "10".to_string()];
     let sets = get_sets(args.into_iter());
     match sets.expect_err("should fail on partial arguments") {
@@ -255,7 +243,7 @@ fn test_get_sets_partial2() {
 }
 
 #[test]
-fn test_get_sets_single() {
+fn get_sets_single() {
     let args = vec!["member1".to_string(), "10".to_string(), "20".to_string()];
     let sets = get_sets(args.into_iter());
     let sets = sets.expect("one member");
@@ -270,7 +258,7 @@ fn test_get_sets_single() {
 }
 
 #[test]
-fn test_get_sets_multi() {
+fn get_sets_multi() {
     let args = vec![
         "member1".to_string(),
         "10".to_string(),
@@ -295,5 +283,39 @@ fn test_get_sets_multi() {
                 max_score: 40,
             }
         ]
+    );
+}
+
+#[test]
+fn get_members_empty() {
+    let args = vec![];
+    let members = get_members(args.into_iter());
+    let members = members.expect("no members");
+    let empty_list: Vec<String> = vec![];
+    assert_eq!(members, empty_list);
+}
+
+#[test]
+fn get_members_single() {
+    let args = vec!["member1".to_string()];
+    let members = get_members(args.into_iter());
+    let members = members.expect("one member");
+    assert_eq!(
+        members,
+        vec!["member1"]
+    );
+}
+
+#[test]
+fn get_members_multi() {
+    let args = vec![
+        "member1".to_string(),
+        "member2".to_string(),
+    ];
+    let members = get_members(args.into_iter());
+    let members = members.expect("multiple members");
+    assert_eq!(
+        members,
+        vec!["member1".to_string(), "member2".to_string()]
     );
 }
