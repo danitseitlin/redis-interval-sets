@@ -84,12 +84,9 @@ OK
 ```
 
 ## Build :hammer:
-Make sure you have Rust installed: https://www.rust-lang.org/tools/install
-
-Then, build as usual:
-```
-cargo build --release
-```
+* Install Rust (https://www.rust-lang.org/tools/install)
+* Install `clang` library
+* Build a release via `cargo build --release`
 
 ## Run :running_man:
 ### Linux
