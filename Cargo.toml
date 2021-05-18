@@ -11,6 +11,10 @@ crate-type = ["cdylib"]
 [dependencies]
 redis-module = { version="0.12.0", features = ["experimental-api"]}
 
+[dev-dependencies]
+redis = "0.20.0"
+anyhow = "1.0.40"
+
 [features]
 # Workaround to allow cfg(feature = "test") in redismodue-rs dependencies:
 # https://github.com/RedisLabsModules/redismodule-rs/pull/68
