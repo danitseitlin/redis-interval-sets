@@ -20,7 +20,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build docker img
-      run: docker build -t local < dockerfile
+      run: docker run -p 6379:6379 -d --rm dockerfile && docker ps -a
     - name: Build
       run: cargo build --all --all-targets --verbose
     - name: Run tests
