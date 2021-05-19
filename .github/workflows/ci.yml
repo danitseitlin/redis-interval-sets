@@ -16,7 +16,10 @@ jobs:
     - name: Run tests
       run: cargo test --features test --all --all-targets --verbose
   Linux:
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
+    runs:
+      using: 'docker'
+      image: 'dockerfile'
     steps:
     - uses: actions/checkout@v2
     - name: Build
