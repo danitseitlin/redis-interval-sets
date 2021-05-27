@@ -78,6 +78,7 @@ fn iset_get_non_existing_set() -> Result<()> {
         res,
         Ok(())
     );
+    Ok(())
 }
 
 #[test]
@@ -90,6 +91,7 @@ fn iset_get_existing_set() -> Result<()> {
         res,
         Ok(())
     );
+    Ok(())
 }
 
 /*#[test]
