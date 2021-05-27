@@ -20,8 +20,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build docker img
-      run: docker run -p 6379:6379 -d --rm . && docker ps -a
-      #run: docker build . -t ris -f ./dockerfile && docker run -d ris
+      #run: docker run -p 6379:6379 -d --rm . && docker ps -a
+      run: docker build . -t ris -f ./dockerfile && docker run -p 6379:6379 -d ris && docker ps -a
       #run: docker run -p 6379:6379 -d --rm . && docker ps -a
     #- name: Build
     #  run: cargo build --all --all-targets --verbose
