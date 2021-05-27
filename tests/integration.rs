@@ -1,4 +1,4 @@
-use redis::{Commands, RedisResult, RedisError};
+//use redis::{Commands, RedisResult, RedisError};
 use anyhow::Result;
 
 #[test]
