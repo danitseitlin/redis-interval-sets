@@ -7,14 +7,14 @@ on:
     branches: [ master ]
 
 jobs:
-  MacOS:
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Setting up Redis server
-      run: docker build . -t ris -f ./dockerfile && docker run -p 6379:6379 -d ris && docker ps -a
-    - name: Run tests
-      run: cargo test integration
+  #MacOS:
+  #  runs-on: macos-latest
+  #  steps:
+  #  - uses: actions/checkout@v2
+  #  - name: Build
+  #    run: cargo build --all --all-targets --verbose
+  #  - name: Run tests
+  #    run: cargo test --features test --all --all-targets --verbose
   Linux:
     runs-on: ubuntu-latest
     steps:
@@ -22,4 +22,4 @@ jobs:
     - name: Setting up Redis server
       run: docker build . -t ris -f ./dockerfile && docker run -p 6379:6379 -d ris && docker ps -a
     - name: Run tests
-      run: cargo test integration
+      run: cargo test --features test --all --all-targets --verbose
