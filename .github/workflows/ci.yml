@@ -14,7 +14,7 @@ jobs:
     - name: Setting up Redis server
       run: docker build . -t ris -f ./dockerfile && docker run -p 6379:6379 -d ris && docker ps -a
     - name: Run tests
-      run: cargo test --features integration --all --all-targets --verbose
+      run: cargo test integration
   Linux:
     runs-on: ubuntu-latest
     steps:
@@ -22,4 +22,4 @@ jobs:
     - name: Setting up Redis server
       run: docker build . -t ris -f ./dockerfile && docker run -p 6379:6379 -d ris && docker ps -a
     - name: Run tests
-      run: cargo test --features integration --all --all-targets --verbose
+      run: cargo test integration

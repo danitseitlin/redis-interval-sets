@@ -19,4 +19,4 @@ anyhow = "1.0.40"
 # Workaround to allow cfg(feature = "test") in redismodue-rs dependencies:
 # https://github.com/RedisLabsModules/redismodule-rs/pull/68
 # This requires running the tests with `--features test`
-integration = ["tests/integration"]
+test = ["redis-module/test"]
