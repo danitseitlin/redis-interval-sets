@@ -3,7 +3,7 @@ use anyhow::Result;
 use redis_module::{raw, Context, NextArg, RedisError, RedisResult, REDIS_OK};
 
 #[test]
-fn iset_add_single_set() -> Result<()> {
+fn iset_add_single_set() -> RedisResult {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
@@ -22,7 +22,7 @@ fn iset_add_single_set() -> Result<()> {
 }
 
 #[test]
-fn iset_add_multi_set() -> Result<()> {
+fn iset_add_multi_set() -> RedisResult {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
@@ -45,7 +45,7 @@ fn iset_add_multi_set() -> Result<()> {
 }
 
 #[test]
-fn iset_add_triple_set() -> Result<()> {
+fn iset_add_triple_set() -> RedisResult {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
@@ -101,7 +101,7 @@ fn iset_add_triple_set() -> Result<()> {
 }
 
 #[test]
-fn iset_get_non_existing_set() -> Result<()> {
+fn iset_get_non_existing_set() -> RedisResult {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
@@ -116,7 +116,7 @@ fn iset_get_non_existing_set() -> Result<()> {
 }
 
 #[test]
-fn iset_get_existing_set() -> Result<()> {
+fn iset_get_existing_set() -> RedisResult {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
@@ -147,7 +147,7 @@ fn iset_get_existing_set() -> Result<()> {
 }
 
 #[test]
-fn iset_score_non_existent_range() -> Result<()> {
+fn iset_score_non_existent_range() -> RedisResult {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
@@ -162,7 +162,7 @@ fn iset_score_non_existent_range() -> Result<()> {
 }
 
 #[test]
-fn iset_score_one_set() -> Result<()> {
+fn iset_score_one_set() -> RedisResult {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
@@ -181,7 +181,7 @@ fn iset_score_one_set() -> Result<()> {
 }
 
 #[test]
-fn iset_score_three_sets() -> Result<()> {
+fn iset_score_three_sets() -> RedisResult {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
@@ -208,7 +208,7 @@ fn iset_score_three_sets() -> Result<()> {
 }
 
 #[test]
-fn iset_not_score_non_existent_range() -> Result<()> {
+fn iset_not_score_non_existent_range() -> RedisResult {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
@@ -223,7 +223,7 @@ fn iset_not_score_non_existent_range() -> Result<()> {
 }
 
 #[test]
-fn iset_not_score_one_set() -> Result<()> {
+fn iset_not_score_one_set() -> RedisResult {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
@@ -242,7 +242,7 @@ fn iset_not_score_one_set() -> Result<()> {
 }
 
 #[test]
-fn iset_not_score_three_sets() -> Result<()> {
+fn iset_not_score_three_sets() -> RedisResult {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
@@ -269,7 +269,7 @@ fn iset_not_score_three_sets() -> Result<()> {
 }
 
 #[test]
-fn iset_del_non_existent_set() -> Result<()> {
+fn iset_del_non_existent_set() -> RedisResult {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
@@ -284,7 +284,7 @@ fn iset_del_non_existent_set() -> Result<()> {
 }
 
 #[test]
-fn iset_del_an_existent_set() -> Result<()> {
+fn iset_del_an_existent_set() -> RedisResult {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
