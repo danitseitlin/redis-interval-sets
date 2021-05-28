@@ -1,3 +1,6 @@
+use structs::{Set, IntervalSet};
+use lib::{get_sets, get_members};
+
 #[test]
 fn get_sets_empty() {
     let args = vec![];
