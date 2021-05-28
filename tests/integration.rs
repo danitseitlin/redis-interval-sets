@@ -1,6 +1,6 @@
 use redis::{Commands, RedisResult, RedisError};
 use anyhow::Result;
-use redis_module::{raw, Context, NextArg, RedisError, /*RedisResult,*/ REDIS_OK};
+use redis_module::{raw, Context, NextArg, /*RedisError, RedisResult,*/ REDIS_OK};
 
 #[test]
 fn iset_add_single_set() -> RedisResult {
