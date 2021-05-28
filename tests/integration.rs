@@ -1,4 +1,4 @@
-//use redis::{Commands, RedisResult, RedisError};
+use redis::{Commands, RedisResult, RedisError};
 use anyhow::Result;
 use redis_module::{raw, Context, NextArg, RedisError, RedisResult, REDIS_OK};
 
