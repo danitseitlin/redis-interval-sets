@@ -18,7 +18,7 @@ fn iset_add_single_set() -> RedisResult {
         res,
         REDIS_OK
     );*/
-    Ok(())
+    REDIS_OK
 }
 
 #[test]
@@ -41,7 +41,7 @@ fn iset_add_multi_set() -> RedisResult {
         res,
         REDIS_OK
     );*/
-    Ok(())
+    REDIS_OK
 }
 
 #[test]
@@ -97,7 +97,7 @@ fn iset_add_triple_set() -> RedisResult {
         res,
         REDIS_OK
     );*/
-    Ok(())
+    REDIS_OK
 }
 
 #[test]
@@ -112,7 +112,7 @@ fn iset_get_non_existing_set() -> RedisResult {
         res,
         vec![]
     );*/
-    Ok(())
+    REDIS_OK
 }
 
 #[test]
@@ -143,7 +143,7 @@ fn iset_get_existing_set() -> RedisResult {
             max_score: 6,
         }]
     );*/
-    Ok(())
+    REDIS_OK
 }
 
 #[test]
@@ -158,7 +158,7 @@ fn iset_score_non_existent_range() -> RedisResult {
         res,
         vec![]
     );*/
-    Ok(())
+    REDIS_OK
 }
 
 #[test]
@@ -177,7 +177,7 @@ fn iset_score_one_set() -> RedisResult {
             max_score: 7,
         }]
     );*/
-    Ok(())
+    REDIS_OK
 }
 
 #[test]
@@ -204,7 +204,7 @@ fn iset_score_three_sets() -> RedisResult {
             max_score: 6,
         }]
     );*/
-    Ok(())
+    REDIS_OK
 }
 
 #[test]
@@ -219,7 +219,7 @@ fn iset_not_score_non_existent_range() -> RedisResult {
         res,
         vec![]
     );*/
-    Ok(())
+    REDIS_OK
 }
 
 #[test]
@@ -238,7 +238,7 @@ fn iset_not_score_one_set() -> RedisResult {
             max_score: 18,
         }]
     );*/
-    Ok(())
+    REDIS_OK
 }
 
 #[test]
@@ -265,7 +265,7 @@ fn iset_not_score_three_sets() -> RedisResult {
             max_score: 6,
         }]
     );*/
-    Ok(())
+    REDIS_OK
 }
 
 #[test]
@@ -280,7 +280,7 @@ fn iset_del_non_existent_set() -> RedisResult {
         res,
         Ok(("ERROR"))
     );*/
-    Ok(())
+    REDIS_OK
 }
 
 #[test]
@@ -295,5 +295,5 @@ fn iset_del_an_existent_set() -> RedisResult {
         res,
         REDIS_OK
     );*/
-    Ok(())
+    REDIS_OK
 }
