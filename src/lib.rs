@@ -31,7 +31,7 @@ unsafe extern "C" fn free(value: *mut c_void) {
     Box::from_raw(value as *mut IntervalSet);
 }
 
-pub fn get_sets<A: NextArg>(mut args: A) -> Result<Vec<Set>, RedisError> {
+fn get_sets<A: NextArg>(mut args: A) -> Result<Vec<Set>, RedisError> {
     let mut sets = vec![];
 
     while let Ok(member) = args.next_string() {
@@ -47,7 +47,7 @@ pub fn get_sets<A: NextArg>(mut args: A) -> Result<Vec<Set>, RedisError> {
     Ok(sets)
 }
 
-pub fn get_members<A: NextArg>(mut args: A) -> Result<Vec<String>, RedisError> {
+fn get_members<A: NextArg>(mut args: A) -> Result<Vec<String>, RedisError> {
     let mut members = vec![];
 
     while let Ok(member) = args.next_string() {

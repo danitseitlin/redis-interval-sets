@@ -7,7 +7,7 @@ fn iset_add_single_set() -> Result<()> {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
-    let res: Result<REDIS_OK, RedisError> = redis::cmd("iset.add")
+    let res: RedisResult = redis::cmd("iset.add")
                 .arg("single_set")
                 .arg("highschool")
                 .arg("12")
@@ -26,7 +26,7 @@ fn iset_add_multi_set() -> Result<()> {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
-    let res: Result<REDIS_OK, RedisError> = redis::cmd("iset.add")
+    let res: RedisResult = redis::cmd("iset.add")
                 .arg("multi_set")
                 .arg("highschool")
                 .arg("12")
@@ -49,7 +49,7 @@ fn iset_add_triple_set() -> Result<()> {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
-    let mut res: Result<REDIS_OK, RedisError> = redis::cmd("iset.add")
+    let mut res: RedisResult = redis::cmd("iset.add")
                 .arg("tripleset")
                 .arg("highschool")
                 .arg("12")
@@ -105,7 +105,7 @@ fn iset_get_non_existing_set() -> Result<()> {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
-    let res: Result<REDIS_OK, RedisError> = redis::cmd("iset.get").arg("non_existing").query(&mut con);
+    let res: RedisResult = redis::cmd("iset.get").arg("non_existing").query(&mut con);
     
     //println!("{:?}", res.ToString());
     /*assert_eq!(
@@ -120,7 +120,7 @@ fn iset_get_existing_set() -> Result<()> {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
-    let res: Result<REDIS_OK, RedisError> = redis::cmd("iset.get").arg("tripleset").query(&mut con);
+    let res: RedisResult = redis::cmd("iset.get").arg("tripleset").query(&mut con);
     
     //println!("{:?}", res.ToString());
     /*assert_eq!(
@@ -151,7 +151,7 @@ fn iset_score_non_existent_range() -> Result<()> {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
-    let res: Result<REDIS_OK, RedisError> = redis::cmd("iset.score").arg("tripleset").arg("101").query(&mut con);
+    let res: RedisResult = redis::cmd("iset.score").arg("tripleset").arg("101").query(&mut con);
     
     //println!("{:?}", res.ToString());
     /*assert_eq!(
@@ -166,7 +166,7 @@ fn iset_score_one_set() -> Result<()> {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
-    let res: Result<REDIS_OK, RedisError> = redis::cmd("iset.score").arg("tripleset").arg("2").query(&mut con);
+    let res: RedisResult = redis::cmd("iset.score").arg("tripleset").arg("2").query(&mut con);
     
     //println!("{:?}", res.ToString());
     /*assert_eq!(
@@ -185,7 +185,7 @@ fn iset_score_three_sets() -> Result<()> {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
-    let res: Result<REDIS_OK, RedisError> = redis::cmd("iset.score").arg("tripleset").arg("5").query(&mut con);
+    let res: RedisResult = redis::cmd("iset.score").arg("tripleset").arg("5").query(&mut con);
     
     //println!("{:?}", res.ToString());
     /*assert_eq!(
@@ -212,7 +212,7 @@ fn iset_not_score_non_existent_range() -> Result<()> {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
-    let res: Result<REDIS_OK, RedisError> = redis::cmd("iset.get").arg("not_score").arg("tripleset").arg("5").query(&mut con);
+    let res: RedisResult = redis::cmd("iset.get").arg("not_score").arg("tripleset").arg("5").query(&mut con);
     
     //println!("{:?}", res.ToString());
     /*assert_eq!(
@@ -227,7 +227,7 @@ fn iset_not_score_one_set() -> Result<()> {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
-    let res: Result<REDIS_OK, RedisError> = redis::cmd("iset.get").arg("not_score").arg("tripleset").arg("3").query(&mut con);
+    let res: RedisResult = redis::cmd("iset.get").arg("not_score").arg("tripleset").arg("3").query(&mut con);
     
     //println!("{:?}", res.ToString());
     /*assert_eq!(
@@ -246,7 +246,7 @@ fn iset_not_score_three_sets() -> Result<()> {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
-    let res: Result<REDIS_OK, RedisError> = redis::cmd("iset.get").arg("not_score").arg("tripleset").arg("12").query(&mut con);
+    let res: RedisResult = redis::cmd("iset.get").arg("not_score").arg("tripleset").arg("12").query(&mut con);
     
     //println!("{:?}", res.ToString());
     /*assert_eq!(
@@ -273,7 +273,7 @@ fn iset_del_non_existent_set() -> Result<()> {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
-    let res: Result<REDIS_OK, RedisError> = redis::cmd("iset.del").arg("XSET").query(&mut con);
+    let res: RedisResult = redis::cmd("iset.del").arg("XSET").query(&mut con);
     
     //println!("{:?}", res.ToString());
     /*assert_eq!(
@@ -288,7 +288,7 @@ fn iset_del_an_existent_set() -> Result<()> {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
-    let res: Result<REDIS_OK, RedisError> = redis::cmd("iset.del").arg("tripleset").query(&mut con);
+    let res: RedisResult = redis::cmd("iset.del").arg("tripleset").query(&mut con);
     
     //println!("{:?}", res.ToString());
     /*assert_eq!(
