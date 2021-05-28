@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate redis_module;
 pub mod structs;
+pub mod lib;
 use redis_module::native_types::RedisType;
 use redis_module::{raw, Context, NextArg, RedisError, RedisResult, REDIS_OK};
 use std::os::raw::c_void;
