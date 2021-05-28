@@ -13,11 +13,11 @@ fn iset_add_single_set() -> Result<()> {
                 .arg("12")
                 .arg("18")
                 .query(&mut con);
-    println!("{:?}", res);
+    println!("{:?}", res.to_string());
     /*assert_eq!(
         res,
         REDIS_OK
-    );*/*/
+    );*/
     Ok(())
 }
 
@@ -36,11 +36,11 @@ fn iset_add_multi_set() -> Result<()> {
                 .arg("7")
                 .query(&mut con);
     
-    println!("{:?}", res);
+    println!("{:?}", res.to_string());
     /*assert_eq!(
         res,
         REDIS_OK
-    );*/*/
+    );*/
     Ok(())
 }
 
@@ -56,7 +56,7 @@ fn iset_add_triple_set() -> Result<()> {
                 .arg("18")
                 .query(&mut con);
     
-    println!("{:?}", res);
+    println!("{:?}", res.to_string());
     /*assert_eq!(
         res,
         REDIS_OK
@@ -68,7 +68,7 @@ fn iset_add_triple_set() -> Result<()> {
                 .arg("7")
                 .query(&mut con);
     
-    println!("{:?}", res);
+    println!("{:?}", res.to_string());
     /*assert_eq!(
         res,
         REDIS_OK
@@ -80,7 +80,7 @@ fn iset_add_triple_set() -> Result<()> {
                 .arg("6")
                 .query(&mut con);
     
-    println!("{:?}", res);
+    println!("{:?}", res.to_string());
     /*assert_eq!(
         res,
         REDIS_OK
@@ -92,11 +92,11 @@ fn iset_add_triple_set() -> Result<()> {
                 .arg("6")
                 .query(&mut con);
     
-    println!("{:?}", res);
+    println!("{:?}", res.to_string());
     /*assert_eq!(
         res,
         REDIS_OK
-    );*/*/
+    );*/
     Ok(())
 }
 
@@ -107,7 +107,7 @@ fn iset_get_non_existing_set() -> Result<()> {
     let mut con = client.get_connection()?;
     let res = redis::cmd("iset.get").arg("non_existing").query(&mut con);
     
-    println!("{:?}", res);
+    println!("{:?}", res.to_string());
     /*assert_eq!(
         res,
         vec![]
@@ -122,7 +122,7 @@ fn iset_get_existing_set() -> Result<()> {
     let mut con = client.get_connection()?;
     let res = redis::cmd("iset.get").arg("tripleset").query(&mut con);
     
-    println!("{:?}", res);
+    println!("{:?}", res.to_string());
     /*assert_eq!(
         res,
         vec![Set {
@@ -153,7 +153,7 @@ fn iset_score_non_existent_range() -> Result<()> {
     let mut con = client.get_connection()?;
     let res = redis::cmd("iset.score").arg("tripleset").arg("101").query(&mut con);
     
-    println!("{:?}", res);
+    println!("{:?}", res.to_string());
     /*assert_eq!(
         res,
         vec![]
@@ -168,7 +168,7 @@ fn iset_score_one_set() -> Result<()> {
     let mut con = client.get_connection()?;
     let res = redis::cmd("iset.score").arg("tripleset").arg("2").query(&mut con);
     
-    println!("{:?}", res);
+    println!("{:?}", res.to_string());
     /*assert_eq!(
         res,
         vec![Set {
@@ -187,7 +187,7 @@ fn iset_score_three_sets() -> Result<()> {
     let mut con = client.get_connection()?;
     let res = redis::cmd("iset.score").arg("tripleset").arg("5").query(&mut con);
     
-    println!("{:?}", res);
+    println!("{:?}", res.to_string());
     /*assert_eq!(
         res,
         vec![Set {
@@ -214,7 +214,7 @@ fn iset_not_score_non_existent_range() -> Result<()> {
     let mut con = client.get_connection()?;
     let res = redis::cmd("iset.get").arg("not_score").arg("tripleset").arg("5").query(&mut con);
     
-    println!("{:?}", res);
+    println!("{:?}", res.to_string());
     /*assert_eq!(
         res,
         vec![]
@@ -229,7 +229,7 @@ fn iset_not_score_one_set() -> Result<()> {
     let mut con = client.get_connection()?;
     let res = redis::cmd("iset.get").arg("not_score").arg("tripleset").arg("3").query(&mut con);
     
-    println!("{:?}", res);
+    println!("{:?}", res.to_string());
     /*assert_eq!(
         res,
         vec![Set {
@@ -248,7 +248,7 @@ fn iset_not_score_three_sets() -> Result<()> {
     let mut con = client.get_connection()?;
     let res = redis::cmd("iset.get").arg("not_score").arg("tripleset").arg("12").query(&mut con);
     
-    println!("{:?}", res);
+    println!("{:?}", res.to_string());
     /*assert_eq!(
         res,
         vec![Set {
@@ -275,7 +275,7 @@ fn iset_del_non_existent_set() -> Result<()> {
     let mut con = client.get_connection()?;
     let res = redis::cmd("iset.del").arg("XSET").query(&mut con);
     
-    println!("{:?}", res);
+    println!("{:?}", res.to_string());
     /*assert_eq!(
         res,
         Ok(("ERROR"))
@@ -290,10 +290,10 @@ fn iset_del_an_existent_set() -> Result<()> {
     let mut con = client.get_connection()?;
     let res = redis::cmd("iset.del").arg("tripleset").query(&mut con);
     
-    println!("{:?}", res);
+    println!("{:?}", res.to_string());
     /*assert_eq!(
         res,
         REDIS_OK
-    );*/*/
+    );*/
     Ok(())
 }
