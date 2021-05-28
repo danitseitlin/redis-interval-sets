@@ -1,6 +1,6 @@
 //use redis::{Commands, RedisResult, RedisError};
 use anyhow::Result;
-use log::info;
+use redis_module::{raw, Context, NextArg, RedisError, RedisResult, REDIS_OK};
 
 #[test]
 fn iset_add_single_set() -> Result<()> {
@@ -13,10 +13,10 @@ fn iset_add_single_set() -> Result<()> {
                 .arg("12")
                 .arg("18")
                 .query(&mut con);
-    info!(res)
+    
     assert_eq!(
         res,
-        Ok(())
+        REDIS_OK
     );
     Ok(())
 }
@@ -35,10 +35,10 @@ fn iset_add_multi_set() -> Result<()> {
                 .arg("1")
                 .arg("7")
                 .query(&mut con);
-    info!(res)
+    
     assert_eq!(
         res,
-        Ok(())
+        REDIS_OK
     );
     Ok(())
 }
@@ -54,10 +54,10 @@ fn iset_add_triple_set() -> Result<()> {
                 .arg("12")
                 .arg("18")
                 .query(&mut con);
-    info!(res)
+    
     assert_eq!(
         res,
-        Ok(())
+        REDIS_OK
     );
     res = redis::cmd("iset.add")
                 .arg("tripleset")
@@ -65,10 +65,10 @@ fn iset_add_triple_set() -> Result<()> {
                 .arg("1")
                 .arg("7")
                 .query(&mut con);
-    info!(res)
+    
     assert_eq!(
         res,
-        Ok(())
+        REDIS_OK
     );
     res = redis::cmd("iset.add")
                 .arg("tripleset")
@@ -76,10 +76,10 @@ fn iset_add_triple_set() -> Result<()> {
                 .arg("4")
                 .arg("6")
                 .query(&mut con);
-    info!(res)
+    
     assert_eq!(
         res,
-        Ok(())
+        REDIS_OK
     );
     res = redis::cmd("iset.add")
                 .arg("tripleset")
@@ -87,10 +87,10 @@ fn iset_add_triple_set() -> Result<()> {
                 .arg("3")
                 .arg("6")
                 .query(&mut con);
-    info!(res)
+    
     assert_eq!(
         res,
-        Ok(())
+        REDIS_OK
     );
     Ok(())
 }
@@ -101,10 +101,10 @@ fn iset_get_non_existing_set() -> Result<()> {
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
     let res = redis::cmd("iset.get").arg("non_existing").query(&mut con);
-    info!(res)
+    
     assert_eq!(
         res,
-        Ok(())
+        vec![]
     );
     Ok(())
 }
@@ -115,10 +115,26 @@ fn iset_get_existing_set() -> Result<()> {
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
     let res = redis::cmd("iset.get").arg("tripleset").query(&mut con);
-    info!(res)
+    
     assert_eq!(
         res,
-        Ok(())
+        vec![Set {
+            member: "highschool".to_string(),
+            min_score: 12,
+            max_score: 18,
+        }, Set {
+            member: "garden".to_string(),
+            min_score: 1,
+            max_score: 7,
+        }, Set {
+            member: "gardenX".to_string(),
+            min_score: 4,
+            max_score: 6,
+        }, Set {
+            member: "gardenY".to_string(),
+            min_score: 3,
+            max_score: 6,
+        }]
     );
     Ok(())
 }
@@ -129,10 +145,10 @@ fn iset_score_non_existent_range() -> Result<()> {
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
     let res = redis::cmd("iset.score").arg("tripleset").arg("101").query(&mut con);
-    info!(res)
+    
     assert_eq!(
         res,
-        Ok(())
+        vec![]
     );
     Ok(())
 }
@@ -143,10 +159,14 @@ fn iset_score_one_set() -> Result<()> {
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
     let res = redis::cmd("iset.score").arg("tripleset").arg("2").query(&mut con);
-    info!(res)
+    
     assert_eq!(
         res,
-        Ok(())
+        vec![Set {
+            member: "garden".to_string(),
+            min_score: 1,
+            max_score: 7,
+        }]
     );
     Ok(())
 }
@@ -157,10 +177,22 @@ fn iset_score_three_sets() -> Result<()> {
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
     let res = redis::cmd("iset.score").arg("tripleset").arg("5").query(&mut con);
-    info!(res)
+    
     assert_eq!(
         res,
-        Ok(())
+        vec![Set {
+            member: "garden".to_string(),
+            min_score: 1,
+            max_score: 7,
+        }, Set {
+            member: "gardenX".to_string(),
+            min_score: 4,
+            max_score: 6,
+        }, Set {
+            member: "gardenY".to_string(),
+            min_score: 3,
+            max_score: 6,
+        }]
     );
     Ok(())
 }
@@ -171,10 +203,10 @@ fn iset_not_score_non_existent_range() -> Result<()> {
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
     let res = redis::cmd("iset.get").arg("not_score").arg("tripleset").arg("5").query(&mut con);
-    info!(res)
+    
     assert_eq!(
         res,
-        Ok(())
+        vec![]
     );
     Ok(())
 }
@@ -185,10 +217,14 @@ fn iset_not_score_one_set() -> Result<()> {
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
     let res = redis::cmd("iset.get").arg("not_score").arg("tripleset").arg("3").query(&mut con);
-    info!(res)
+    
     assert_eq!(
         res,
-        Ok(())
+        vec![Set {
+            member: "highschool".to_string(),
+            min_score: 12,
+            max_score: 18,
+        }]
     );
     Ok(())
 }
@@ -198,11 +234,23 @@ fn iset_not_score_three_sets() -> Result<()> {
     // Connect to Redis
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
-    let res = redis::cmd("iset.get").arg("not_score").arg("tripleset").arg("100").query(&mut con);
-    info!(res)
+    let res = redis::cmd("iset.get").arg("not_score").arg("tripleset").arg("12").query(&mut con);
+    
     assert_eq!(
         res,
-        Ok(())
+        vec![Set {
+            member: "garden".to_string(),
+            min_score: 1,
+            max_score: 7,
+        }, Set {
+            member: "gardenX".to_string(),
+            min_score: 4,
+            max_score: 6,
+        }, Set {
+            member: "gardenY".to_string(),
+            min_score: 3,
+            max_score: 6,
+        }]
     );
     Ok(())
 }
@@ -213,10 +261,10 @@ fn iset_del_non_existent_set() -> Result<()> {
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
     let res = redis::cmd("iset.del").arg("XSET").query(&mut con);
-    info!(res)
+    
     assert_eq!(
         res,
-        Ok(())
+        Ok(("ERROR"))
     );
     Ok(())
 }
@@ -227,10 +275,10 @@ fn iset_del_an_existent_set() -> Result<()> {
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", "6379"))?;
     let mut con = client.get_connection()?;
     let res = redis::cmd("iset.del").arg("tripleset").query(&mut con);
-    info!(res)
+    
     assert_eq!(
         res,
-        Ok(())
+        REDIS_OK
     );
     Ok(())
 }
