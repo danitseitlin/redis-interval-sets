@@ -78,8 +78,9 @@ fn is_add(ctx: &Context, args: Vec<String>) -> RedisResult {
     match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
             println!("Count of items before new item: {}", value.sets.len());
-            value.sets.extend(sets);
+            let new_value = value.sets.extend(sets);
             println!("Count of items: {}", value.sets.len());
+            key.set_value(&REDIS_INTERVAL_SETS, new_value)?;
         }
         None => {
             println!("Creating a new key");
