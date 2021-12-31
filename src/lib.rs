@@ -31,6 +31,7 @@ unsafe extern "C" fn free(value: *mut c_void) {
     Box::from_raw(value as *mut IntervalSet);
 }
 
+///Retrieving a list of sets based on CLI input.
 fn get_sets<A: NextArg>(mut args: A) -> Result<Vec<Set>, RedisError> {
     let mut sets = vec![];
     while let Ok(member) = args.next_string() {
@@ -46,6 +47,7 @@ fn get_sets<A: NextArg>(mut args: A) -> Result<Vec<Set>, RedisError> {
     Ok(sets)
 }
 
+///Retrieving a list of set members based on CLI input.
 fn get_members<A: NextArg>(mut args: A) -> Result<Vec<String>, RedisError> {
     let mut members = vec![];
 
@@ -56,6 +58,7 @@ fn get_members<A: NextArg>(mut args: A) -> Result<Vec<String>, RedisError> {
     Ok(members)
 }
 
+///Checking if set is in given score range.
 fn is_in_score_range(set: &&Set, score: i64) -> bool {
     if set.min_score <= score && set.max_score >= score {
         return true;
@@ -63,6 +66,8 @@ fn is_in_score_range(set: &&Set, score: i64) -> bool {
     return false;
 }
 
+/// Adding a new interval set.
+/// This function is used for the iset.add command.
 fn is_add(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
     let key_name_arg = args.next_string()?;
@@ -89,6 +94,8 @@ fn is_add(ctx: &Context, args: Vec<String>) -> RedisResult {
     REDIS_OK
 }
 
+/// Deleting a interval set.
+/// This function is used for the iset.del command.
 fn is_del(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
     let key_name_arg = args.next_string()?;
@@ -110,6 +117,8 @@ fn is_del(ctx: &Context, args: Vec<String>) -> RedisResult {
     };
 }
 
+/// Retrieving interval set info.
+/// This function is used for the iset.get command.
 fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
     let key_name_arg = args.next_string()?;
@@ -153,6 +162,8 @@ fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
     }
 }
 
+/// Searching for set in score range.
+/// This function is used for the iset.score command.
 fn is_score(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
     let key_name_arg = args.next_string()?;
@@ -173,6 +184,8 @@ fn is_score(ctx: &Context, args: Vec<String>) -> RedisResult {
     };
 }
 
+/// Searching for set not in score range.
+/// This function is used for the iset.not_score command.
 fn is_not_score(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
     let key_name_arg = args.next_string()?;
