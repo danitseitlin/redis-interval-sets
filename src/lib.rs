@@ -33,7 +33,6 @@ unsafe extern "C" fn free(value: *mut c_void) {
 
 fn get_sets<A: NextArg>(mut args: A) -> Result<Vec<Set>, RedisError> {
     let mut sets = vec![];
-
     while let Ok(member) = args.next_string() {
         let set = Set {
             member,
@@ -66,40 +65,38 @@ fn is_in_score_range(set: &&Set, score: i64) -> bool {
 
 fn is_add(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
-    let key = args.next_string()?;
+    let key_name_arg = args.next_string()?;
 
     let sets = get_sets(&mut args)?;
     if sets.is_empty() {
         return Err(RedisError::WrongArity);
     }
 
-    let key = ctx.open_key_writable(&key);
-
+    let key = ctx.open_key_writable(&key_name_arg);
     match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
-            println!("Count of items before new item: {}", value.sets.len());
-            let new_value = value.sets.extend(sets);
-            println!("Count of items: {}", value.sets.len());
-            key.set_value(&REDIS_INTERVAL_SETS, new_value)?;
+            println!("[iset.add] Updating key '{}'", key_name_arg);
+            value.sets.extend(sets);
         }
         None => {
-            println!("Creating a new key");
+            println!("[iset.add] Adding a new key '{}'", key_name_arg);
             let value = IntervalSet { sets };
-            println!("Count of items: {}", value.sets.len());
             key.set_value(&REDIS_INTERVAL_SETS, value)?;
         }
     }
+    
 
     REDIS_OK
 }
 
 fn is_del(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
-    let key = args.next_string()?;
+    let key_name_arg = args.next_string()?;
     let members = get_members(&mut args)?;
-    let key = ctx.open_key_writable(&key);
+    let key = ctx.open_key_writable(&key_name_arg);
     return match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
+            println!("[iset.del] Deleting key '{}'", key_name_arg);
             if members.is_empty() {
                 key.delete()?;
                 return REDIS_OK;
@@ -115,15 +112,13 @@ fn is_del(ctx: &Context, args: Vec<String>) -> RedisResult {
 
 fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
-    let key = args.next_string()?;
-
-    let key = ctx.open_key(&key);
-
-    println!("iset.get on key");
-
+    let key_name_arg = args.next_string()?;
+    let key = ctx.open_key(&key_name_arg);
     match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
+            println!("[is.get] Retrieving key '{}'", key_name_arg);
             if let Ok(member) = args.next_string() {
+                println!("[is.get] Retrieving key '{}' members '{}'", key_name_arg, member);
                 let sets: Vec<_> = value
                     .sets
                     .iter()
@@ -160,10 +155,10 @@ fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
 
 fn is_score(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
-    let key = args.next_string()?;
+    let key_name_arg = args.next_string()?;
     let score = args.next_i64()?;
-    let key = ctx.open_key(&key);
-
+    let key = ctx.open_key(&key_name_arg);
+    println!("[iset.score] Retrieving key '{}' sets in score '{}'", key_name_arg, score);
     return match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
             let sets: Vec<_> = value
@@ -180,10 +175,11 @@ fn is_score(ctx: &Context, args: Vec<String>) -> RedisResult {
 
 fn is_not_score(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
-    let key = args.next_string()?;
+    let key_name_arg = args.next_string()?;
     let score = args.next_i64()?;
-    let key = ctx.open_key(&key);
+    let key = ctx.open_key(&key_name_arg);
 
+    println!("[iset.not_score] Retrieving key '{}' sets not in score '{}'", key_name_arg, score);
     return match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
             let sets: Vec<_> = value
