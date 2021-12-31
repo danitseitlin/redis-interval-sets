@@ -31,9 +31,9 @@ unsafe extern "C" fn free(value: *mut c_void) {
     Box::from_raw(value as *mut IntervalSet);
 }
 
+///Retrieving a list of sets based on CLI input.
 fn get_sets<A: NextArg>(mut args: A) -> Result<Vec<Set>, RedisError> {
     let mut sets = vec![];
-
     while let Ok(member) = args.next_string() {
         let set = Set {
             member,
@@ -47,6 +47,7 @@ fn get_sets<A: NextArg>(mut args: A) -> Result<Vec<Set>, RedisError> {
     Ok(sets)
 }
 
+///Retrieving a list of set members based on CLI input.
 fn get_members<A: NextArg>(mut args: A) -> Result<Vec<String>, RedisError> {
     let mut members = vec![];
 
@@ -57,6 +58,7 @@ fn get_members<A: NextArg>(mut args: A) -> Result<Vec<String>, RedisError> {
     Ok(members)
 }
 
+///Checking if set is in given score range.
 fn is_in_score_range(set: &&Set, score: i64) -> bool {
     if set.min_score <= score && set.max_score >= score {
         return true;
@@ -64,41 +66,44 @@ fn is_in_score_range(set: &&Set, score: i64) -> bool {
     return false;
 }
 
+/// Adding a new interval set.
+/// This function is used for the iset.add command.
 fn is_add(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
-    let key = args.next_string()?;
+    let key_name_arg = args.next_string()?;
 
     let sets = get_sets(&mut args)?;
     if sets.is_empty() {
         return Err(RedisError::WrongArity);
     }
 
-    let key = ctx.open_key_writable(&key);
-
+    let key = ctx.open_key_writable(&key_name_arg);
     match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
-            println!("Count of items before new item: {}", value.sets.len());
+            println!("[iset.add] Updating key '{}'", key_name_arg);
             value.sets.extend(sets);
-            println!("Count of items: {}", value.sets.len());
         }
         None => {
-            println!("Creating a new key");
+            println!("[iset.add] Adding a new key '{}'", key_name_arg);
             let value = IntervalSet { sets };
-            println!("Count of items: {}", value.sets.len());
             key.set_value(&REDIS_INTERVAL_SETS, value)?;
         }
     }
+    
 
     REDIS_OK
 }
 
+/// Deleting a interval set.
+/// This function is used for the iset.del command.
 fn is_del(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
-    let key = args.next_string()?;
+    let key_name_arg = args.next_string()?;
     let members = get_members(&mut args)?;
-    let key = ctx.open_key_writable(&key);
+    let key = ctx.open_key_writable(&key_name_arg);
     return match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
+            println!("[iset.del] Deleting key '{}'", key_name_arg);
             if members.is_empty() {
                 key.delete()?;
                 return REDIS_OK;
@@ -112,17 +117,17 @@ fn is_del(ctx: &Context, args: Vec<String>) -> RedisResult {
     };
 }
 
+/// Retrieving interval set info.
+/// This function is used for the iset.get command.
 fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
-    let key = args.next_string()?;
-
-    let key = ctx.open_key(&key);
-
-    println!("iset.get on key");
-
+    let key_name_arg = args.next_string()?;
+    let key = ctx.open_key(&key_name_arg);
     match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
+            println!("[is.get] Retrieving key '{}'", key_name_arg);
             if let Ok(member) = args.next_string() {
+                println!("[is.get] Retrieving key '{}' members '{}'", key_name_arg, member);
                 let sets: Vec<_> = value
                     .sets
                     .iter()
@@ -157,12 +162,14 @@ fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
     }
 }
 
+/// Searching for set in score range.
+/// This function is used for the iset.score command.
 fn is_score(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
-    let key = args.next_string()?;
+    let key_name_arg = args.next_string()?;
     let score = args.next_i64()?;
-    let key = ctx.open_key(&key);
-
+    let key = ctx.open_key(&key_name_arg);
+    println!("[iset.score] Retrieving key '{}' sets in score '{}'", key_name_arg, score);
     return match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
             let sets: Vec<_> = value
@@ -177,12 +184,15 @@ fn is_score(ctx: &Context, args: Vec<String>) -> RedisResult {
     };
 }
 
+/// Searching for set not in score range.
+/// This function is used for the iset.not_score command.
 fn is_not_score(ctx: &Context, args: Vec<String>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
-    let key = args.next_string()?;
+    let key_name_arg = args.next_string()?;
     let score = args.next_i64()?;
-    let key = ctx.open_key(&key);
+    let key = ctx.open_key(&key_name_arg);
 
+    println!("[iset.not_score] Retrieving key '{}' sets not in score '{}'", key_name_arg, score);
     return match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
             let sets: Vec<_> = value
