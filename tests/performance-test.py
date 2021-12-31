@@ -13,5 +13,5 @@ for i in range(count):
     #trigger more sets
     #res = add_cmd(r, "key", "set1", 10, 25)
     print(f'response: {res}')
-
+r.save()
 print("Done!~!")
