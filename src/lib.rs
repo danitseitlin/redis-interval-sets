@@ -3,8 +3,8 @@ extern crate redis_module;
 pub mod structs;
 use redis_module::native_types::RedisType;
 use redis_module::{raw, Context, NextArg, RedisError, RedisResult, REDIS_OK};
-use std::os::raw::c_void;
-use structs::{Set, IntervalSet};
+use structs::{Set, Sets, IntervalSet};
+use std::os::raw::{c_int, c_void};
 
 static REDIS_INTERVAL_SETS: RedisType = RedisType::new(
     "IntervlSt",
@@ -12,7 +12,7 @@ static REDIS_INTERVAL_SETS: RedisType = RedisType::new(
     raw::RedisModuleTypeMethods {
         version: raw::REDISMODULE_TYPE_METHOD_VERSION as u64,
         rdb_load: None,
-        rdb_save: None,
+        rdb_save: Some(rdb_save),
         aof_rewrite: None,
         free: Some(free),
 
@@ -31,9 +31,55 @@ unsafe extern "C" fn free(value: *mut c_void) {
     Box::from_raw(value as *mut IntervalSet);
 }
 
+unsafe extern "C" fn rdb_save(rdb: *mut raw::RedisModuleIO, value: *mut c_void) {
+    let i_sets = unsafe {&*(value as *mut IntervalSet) };
+    println!("Saving: {}", &i_sets.to_string());
+    raw::save_string(rdb, "key of data");
+    //raw::save_string(rdb, &i_sets.to_string());
+}
+
+pub extern "C" fn rdb_load(rdb: *mut raw::RedisModuleIO, encver: c_int)/* -> *mut c_void*/ {
+    println!("{}", encver);
+    /*Ok(match encver {
+        0 => {
+            let v = backward::json_rdb_load(rdb)?;
+//
+            let mut out = serde_json::Serializer::new(Vec::new());
+            v.serialize(&mut out).unwrap();
+            String::from_utf8(out.into_inner()).unwrap()
+        }
+        2 => {
+            let data = raw::load_string(rdb)?;
+            // Backward support for modules that had AUX field for RediSarch
+            // TODO remove in future versions
+            let u = raw::load_unsigned(rdb)?;
+            if u > 0 {
+                raw::load_string(rdb)?;
+                raw::load_string(rdb)?;
+            }
+            data.try_as_str()?.to_string()
+        }
+        3 => {
+            let data = raw::load_string(rdb)?;
+            data.try_as_str()?.to_string()
+        }
+        _ => panic!("Can't load old RedisJSON RDB"),
+    })*/
+    /*let data = raw::load_string(rdb);
+    // Backward support for modules that had AUX field for RediSarch
+    // TODO remove in future versions
+    let u = raw::load_unsigned(rdb);
+    if u > 0 {
+        raw::load_string(rdb);
+        raw::load_string(rdb);
+    }
+    Box::into_raw(Box::new(data.to_string())).cast::<libc::c_void>()*/
+    raw::load_string(rdb);
+}
+
 ///Retrieving a list of sets based on CLI input.
-fn get_sets<A: NextArg>(mut args: A) -> Result<Vec<Set>, RedisError> {
-    let mut sets = vec![];
+fn get_sets<A: NextArg>(mut args: A) -> Result<Sets, RedisError> {
+    let mut sets: Sets = Sets(vec![]);
     while let Ok(member) = args.next_string() {
         let set = Set {
             member,
@@ -41,7 +87,7 @@ fn get_sets<A: NextArg>(mut args: A) -> Result<Vec<Set>, RedisError> {
             min_score: args.next_i64()?,
             max_score: args.next_i64()?,
         };
-        sets.push(set);
+        sets.0.push(set);
     }
 
     Ok(sets)
@@ -73,7 +119,7 @@ fn is_add(ctx: &Context, args: Vec<String>) -> RedisResult {
     let key_name_arg = args.next_string()?;
 
     let sets = get_sets(&mut args)?;
-    if sets.is_empty() {
+    if sets.0.is_empty() {
         return Err(RedisError::WrongArity);
     }
 
@@ -81,7 +127,7 @@ fn is_add(ctx: &Context, args: Vec<String>) -> RedisResult {
     match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
             println!("[iset.add] Updating key '{}'", key_name_arg);
-            value.sets.extend(sets);
+            value.sets.0.extend(sets.0);
         }
         None => {
             println!("[iset.add] Adding a new key '{}'", key_name_arg);
@@ -109,7 +155,7 @@ fn is_del(ctx: &Context, args: Vec<String>) -> RedisResult {
                 return REDIS_OK;
             }
             for member in members {
-                value.sets.retain(|set| set.member != member)
+                value.sets.0.retain(|set| set.member != member)
             }
             return REDIS_OK;
         }
@@ -130,6 +176,7 @@ fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
                 println!("[is.get] Retrieving key '{}' members '{}'", key_name_arg, member);
                 let sets: Vec<_> = value
                     .sets
+                    .0
                     .iter()
                     .filter(|set| set.member == member)
                     .map(|set| {
@@ -144,6 +191,7 @@ fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
             } else {
                 let sets: Vec<_> = value
                     .sets
+                    .0
                     .iter()
                     .filter(|_set| true)
                     .map(|set| {
@@ -174,6 +222,7 @@ fn is_score(ctx: &Context, args: Vec<String>) -> RedisResult {
         Some(value) => {
             let sets: Vec<_> = value
                 .sets
+                .0
                 .iter()
                 .filter(|set| is_in_score_range(set, score) == true)
                 .map(|set| set.member.clone())
@@ -197,6 +246,7 @@ fn is_not_score(ctx: &Context, args: Vec<String>) -> RedisResult {
         Some(value) => {
             let sets: Vec<_> = value
                 .sets
+                .0
                 .iter()
                 .filter(|set| is_in_score_range(set, score) == false)
                 .map(|set| set.member.clone())
