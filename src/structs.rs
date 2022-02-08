@@ -12,7 +12,6 @@ pub struct Set {
 impl fmt::Display for Set {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let out = "{'member':'".to_string() + &self.member.to_string() + &"','min_score':".to_string() + &self.min_score.to_string() + &",'max_score':".to_string() + &self.max_score.to_string() + "}";
-        println!("parsing Set: {}", out);
         write!(f, "{}", out)
     }
 }
@@ -45,7 +44,6 @@ impl FromStr for IntervalSet {
         println!("{}", s);
         let mut sets: Sets = Sets(vec![]);
         if s != "[]" {
-            //let sets: Sets = Sets(vec![]);
             let mut sets_in_string: Vec<String> = vec![];
             //Going over the string and spliting it to a Vec of js objects as string.
             let mut found_json = false;
@@ -66,11 +64,8 @@ impl FromStr for IntervalSet {
                     current_set_in_string.push(i);
                 }
             }
-            //println!("current_set_in_string: {}", sets_in_string.iter().collect());
             //Goining over the Vec of json objects as strings, creating Sets;
             for i in sets_in_string {
-
-                //
                 let mut member: String = "".to_string();
                 let mut min_score: i64 = 0;
                 let mut max_score: i64 = 1;
@@ -81,7 +76,6 @@ impl FromStr for IntervalSet {
                     else if sp[0].contains("min_score")  { min_score = sp[1].parse::<i64>().unwrap(); }
                     else if sp[0].contains("max_score")  { max_score = sp[1].parse::<i64>().unwrap(); }
                 }
-                println!("for {} found: member => {}, min => {}, max => {}", i, member, min_score, max_score);
                 sets.0.push(Set { member, min_score, max_score });
             }
         }
