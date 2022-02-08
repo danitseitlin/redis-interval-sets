@@ -5,13 +5,14 @@ use redis_module::native_types::RedisType;
 use redis_module::{raw, Context, NextArg, RedisError, RedisResult, REDIS_OK, RedisString};
 use structs::{Set, Sets, IntervalSet};
 use std::os::raw::{c_int, c_void};
+use std::str::FromStr;
 
 static REDIS_INTERVAL_SETS: RedisType = RedisType::new(
     "IntervlSt",
     0,
     raw::RedisModuleTypeMethods {
         version: raw::REDISMODULE_TYPE_METHOD_VERSION as u64,
-        rdb_load: None,
+        rdb_load: Some(rdb_load),
         rdb_save: Some(rdb_save),
         aof_rewrite: None,
         free: Some(free),
@@ -37,49 +38,19 @@ unsafe extern "C" fn free(value: *mut c_void) {
 }
 
 unsafe extern "C" fn rdb_save(rdb: *mut raw::RedisModuleIO, value: *mut c_void) {
-    let i_sets = unsafe {&*(value as *mut IntervalSet) };
+    let i_sets =  {&*(value as *mut IntervalSet) };
     println!("Saving: {}", &i_sets.to_string());
-    raw::save_string(rdb, "key of data");
-    //raw::save_string(rdb, &i_sets.to_string());
+    raw::save_string(rdb, &i_sets.to_string());
 }
 
-pub extern "C" fn rdb_load(rdb: *mut raw::RedisModuleIO, encver: c_int)/* -> *mut c_void*/ {
-    println!("{}", encver);
-    /*Ok(match encver {
-        0 => {
-            let v = backward::json_rdb_load(rdb)?;
-//
-            let mut out = serde_json::Serializer::new(Vec::new());
-            v.serialize(&mut out).unwrap();
-            String::from_utf8(out.into_inner()).unwrap()
-        }
-        2 => {
-            let data = raw::load_string(rdb)?;
-            // Backward support for modules that had AUX field for RediSarch
-            // TODO remove in future versions
-            let u = raw::load_unsigned(rdb)?;
-            if u > 0 {
-                raw::load_string(rdb)?;
-                raw::load_string(rdb)?;
-            }
-            data.try_as_str()?.to_string()
-        }
-        3 => {
-            let data = raw::load_string(rdb)?;
-            data.try_as_str()?.to_string()
-        }
-        _ => panic!("Can't load old RedisJSON RDB"),
-    })*/
-    /*let data = raw::load_string(rdb);
-    // Backward support for modules that had AUX field for RediSarch
-    // TODO remove in future versions
-    let u = raw::load_unsigned(rdb);
-    if u > 0 {
-        raw::load_string(rdb);
-        raw::load_string(rdb);
-    }
-    Box::into_raw(Box::new(data.to_string())).cast::<libc::c_void>()*/
-    raw::load_string(rdb);
+pub extern "C" fn rdb_load(rdb: *mut raw::RedisModuleIO, _encver: c_int) -> *mut c_void {
+    let value = get_load_data_as_str(rdb);
+    Box::into_raw(Box::new(value)).cast::<libc::c_void>()
+}
+
+fn get_load_data_as_str(rdb: *mut raw::RedisModuleIO) -> IntervalSet {
+    let data = raw::load_string(rdb).unwrap();
+    return IntervalSet::from_str(&data.try_as_str().unwrap().to_string()).unwrap();
 }
 
 ///Retrieving a list of sets based on CLI input.
