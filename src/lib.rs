@@ -255,12 +255,13 @@ fn get_sets_empty() {
     let args = vec![];
     let sets = get_sets(args.into_iter());
     let sets = sets.expect("no sets");
-    assert_eq!(sets, vec![]);
+    assert_eq!(sets.0, vec![]);
 }
 
 #[test]
 fn get_sets_partial1() {
-    let args = vec!["member1".to_string()];
+    let args = vec![];
+    args.push("member1".to_string());
     let sets = get_sets(args.into_iter());
     match sets.expect_err("should fail on partial arguments") {
         RedisError::WrongArity => {}
@@ -271,7 +272,7 @@ fn get_sets_partial1() {
 #[test]
 fn get_sets_partial2() {
     let args = vec!["member1".to_string(), "10".to_string()];
-    let sets = get_sets(args.into_iter());
+    let sets = get_sets(args.iter());
     match sets.expect_err("should fail on partial arguments") {
         RedisError::WrongArity => {}
         _ => panic!("wrong error"),
@@ -284,7 +285,7 @@ fn get_sets_single() {
     let sets = get_sets(args.into_iter());
     let sets = sets.expect("one member");
     assert_eq!(
-        sets,
+        sets.0,
         vec![Set {
             member: "member1".to_string(),
             min_score: 10,
@@ -306,7 +307,7 @@ fn get_sets_multi() {
     let sets = get_sets(args.into_iter());
     let sets = sets.expect("multiple members");
     assert_eq!(
-        sets,
+        sets.0,
         vec![
             Set {
                 member: "member1".to_string(),
