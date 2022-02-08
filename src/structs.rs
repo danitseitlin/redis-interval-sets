@@ -33,7 +33,6 @@ pub struct IntervalSet {
 impl fmt::Display for IntervalSet {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let sets: String = self.sets.to_string().chars().take(self.sets.to_string().len()-1).collect();
-        println!("parsing sets: [{}]", sets);
         write!(f, "[{}]", sets)
     }
 }
@@ -41,7 +40,6 @@ impl fmt::Display for IntervalSet {
 impl FromStr for IntervalSet {
     type Err = ParseIntError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        println!("{}", s);
         let mut sets: Sets = Sets(vec![]);
         if s != "[]" {
             let mut sets_in_string: Vec<String> = vec![];
