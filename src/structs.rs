@@ -16,6 +16,7 @@ impl fmt::Display for Set {
     }
 }
 
+#[derive(Debug, PartialEq)]
 pub struct Sets(pub Vec<Set>);
 
 impl fmt::Display for Sets {
@@ -25,7 +26,7 @@ impl fmt::Display for Sets {
         })
     }
 }
-
+#[derive(Debug, PartialEq)]
 pub struct IntervalSet {
     pub sets: Sets,
 }

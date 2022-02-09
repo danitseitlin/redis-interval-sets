@@ -260,9 +260,10 @@ fn get_sets_empty() {
 
 #[test]
 fn get_sets_partial1() {
-    let args = vec![];
-    args.push("member1".to_string());
-    let sets = get_sets(args.into_iter());
+    let ctx = Context::dummy().ctx;
+    let args = vec![RedisString::create(ctx, "member1")];
+    let mut args = args.into_iter();
+    let sets = get_sets(&mut args);
     match sets.expect_err("should fail on partial arguments") {
         RedisError::WrongArity => {}
         _ => panic!("wrong error"),
@@ -271,8 +272,9 @@ fn get_sets_partial1() {
 
 #[test]
 fn get_sets_partial2() {
-    let args = vec!["member1".to_string(), "10".to_string()];
-    let sets = get_sets(args.iter());
+    let ctx = Context::dummy().ctx;
+    let args = vec![RedisString::create(ctx, "member1"), RedisString::create(ctx, "10")];
+    let sets = get_sets(args.into_iter());
     match sets.expect_err("should fail on partial arguments") {
         RedisError::WrongArity => {}
         _ => panic!("wrong error"),
@@ -281,7 +283,8 @@ fn get_sets_partial2() {
 
 #[test]
 fn get_sets_single() {
-    let args = vec!["member1".to_string(), "10".to_string(), "20".to_string()];
+    let ctx = Context::dummy().ctx;
+    let args = vec![RedisString::create(ctx, "member1"), RedisString::create(ctx, "10"), RedisString::create(ctx, "20")];
     let sets = get_sets(args.into_iter());
     let sets = sets.expect("one member");
     assert_eq!(
@@ -296,13 +299,14 @@ fn get_sets_single() {
 
 #[test]
 fn get_sets_multi() {
+    let ctx = Context::dummy().ctx;
     let args = vec![
-        "member1".to_string(),
-        "10".to_string(),
-        "20".to_string(),
-        "member2".to_string(),
-        "30".to_string(),
-        "40".to_string(),
+        RedisString::create(ctx, "member1"),
+        RedisString::create(ctx, "10"),
+        RedisString::create(ctx, "20"),
+        RedisString::create(ctx, "member2"),
+        RedisString::create(ctx, "30"),
+        RedisString::create(ctx, "40"),
     ];
     let sets = get_sets(args.into_iter());
     let sets = sets.expect("multiple members");
@@ -334,7 +338,8 @@ fn get_members_empty() {
 
 #[test]
 fn get_members_single() {
-    let args = vec!["member1".to_string()];
+    let ctx = Context::dummy().ctx;
+    let args = vec![RedisString::create(ctx, "member1")];
     let members = get_members(args.into_iter());
     let members = members.expect("one member");
     assert_eq!(
@@ -345,9 +350,10 @@ fn get_members_single() {
 
 #[test]
 fn get_members_multi() {
+    let ctx = Context::dummy().ctx;
     let args = vec![
-        "member1".to_string(),
-        "member2".to_string(),
+        RedisString::create(ctx, "member1"),
+        RedisString::create(ctx, "member2"),
     ];
     let members = get_members(args.into_iter());
     let members = members.expect("multiple members");
