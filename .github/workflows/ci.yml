@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build
-      run: cargo build --all --all-targets --verbose && ls
+      run: cargo build --all --all-targets --verbose && ls target
     - name: Run tests
       run: cargo build --all --all-targets --verbose && cargo test --features test --all --all-targets --verbose
   Linux:
