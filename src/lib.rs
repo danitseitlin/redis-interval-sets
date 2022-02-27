@@ -249,7 +249,7 @@ redis_module! {
         ["iset.not_score", is_not_score, "readonly", 1, 1, 1],
     ],
 }
-
+/* 
 #[test]
 fn get_sets_empty() {
     let args = vec![];
@@ -361,4 +361,4 @@ fn get_members_multi() {
         members,
         vec!["member1".to_string(), "member2".to_string()]
     );
-}
+}*/
