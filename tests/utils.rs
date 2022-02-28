@@ -35,7 +35,7 @@ pub fn start_redis_server_with_module(module_name: &str, port: u16) -> Result<Ch
     } else {
         "debug"
     };
-
+    println!("target/{}/lib{}.{}", profile, module_name, extension);
     let module_path: PathBuf = [
         std::env::current_dir()?,
         PathBuf::from(format!(
