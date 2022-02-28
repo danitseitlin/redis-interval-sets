@@ -35,7 +35,6 @@ pub fn start_redis_server_with_module(module_name: &str, port: u16) -> Result<Ch
     } else {
         "debug"
     };
-    println!("target/{}/lib{}.{}", profile, module_name, extension);
     let module_path: PathBuf = [
         std::env::current_dir()?,
         PathBuf::from(format!(
@@ -46,19 +45,16 @@ pub fn start_redis_server_with_module(module_name: &str, port: u16) -> Result<Ch
     .iter()
     .collect();
 
-
-    
-    assert!(fs::metadata(&module_path)
-        .with_context(|| format!("Loading redis module: {}", module_path.display()))?
-        .is_file());
-
     let module_path = format!("{}", module_path.display());
-
+    assert!(fs::metadata(&module_path)
+        .with_context(|| format!("Loading redis module: {}", module_path.as_str()))?
+        .is_file());
+    println!("Loading redis module: {}", module_path.as_str());
     let args = &[
         "--port",
         &port.to_string(),
         "--loadmodule",
-        module_path.as_str(),
+        module_path.as_str()
     ];
 
     let redis_server = Command::new("redis-server")
@@ -67,7 +63,7 @@ pub fn start_redis_server_with_module(module_name: &str, port: u16) -> Result<Ch
         .map(|c| ChildGuard {
             name: "redis-server",
             child: c,
-        })?;
+        }).with_context(|| format!("Error in raising redis-server => {}", module_path.as_str()))?;
 
     Ok(redis_server)
 }
