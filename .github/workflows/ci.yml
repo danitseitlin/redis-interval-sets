@@ -16,7 +16,7 @@ jobs:
     - name: Build
       run: cargo build --release && ls target
     - name: Run tests
-      run: cargo test --features test --all --all-targets --verbose
+      run: cargo build --release && ls target && cargo test --features test --all --all-targets --verbose
   Linux:
 
     runs-on: ubuntu-latest
