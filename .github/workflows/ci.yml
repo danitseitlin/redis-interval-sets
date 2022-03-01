@@ -14,7 +14,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Setup redis
-      run: apt install redis-server
+      uses: shogo82148/actions-setup-redis@v1
+      with:
+        redis-version: 6.0
+        auto-start: "false"
+    - name: ls
+      run: ls 
     - name: Build
       run: cargo build --all --all-targets --verbose
     - name: ls
