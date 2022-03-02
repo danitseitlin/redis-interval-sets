@@ -46,7 +46,7 @@ impl FromStr for IntervalSet {
             let mut sets_in_string: Vec<String> = vec![];
             //Going over the string and spliting it to a Vec of js objects as string.
             let mut found_json = false;
-            let mut current_set_in_string: Vec<char> = vec![];// = "".to_string();
+            let mut current_set_in_string: Vec<char> = vec![];
             for i in s.chars() {
                 let c = i;
                 if i == '{' && !found_json {
