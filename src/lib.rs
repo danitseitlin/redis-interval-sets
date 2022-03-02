@@ -2,17 +2,18 @@
 extern crate redis_module;
 pub mod structs;
 use redis_module::native_types::RedisType;
-use redis_module::{raw, Context, NextArg, RedisError, RedisResult, REDIS_OK};
-use std::os::raw::c_void;
-use structs::{Set, IntervalSet};
+use redis_module::{raw, Context, NextArg, RedisError, RedisResult, REDIS_OK, RedisString};
+use structs::{Set, Sets, IntervalSet};
+use std::os::raw::{c_int, c_void};
+use std::str::FromStr;
 
 static REDIS_INTERVAL_SETS: RedisType = RedisType::new(
     "IntervlSt",
     0,
     raw::RedisModuleTypeMethods {
         version: raw::REDISMODULE_TYPE_METHOD_VERSION as u64,
-        rdb_load: None,
-        rdb_save: None,
+        rdb_load: Some(rdb_load),
+        rdb_save: Some(rdb_save),
         aof_rewrite: None,
         free: Some(free),
 
@@ -24,6 +25,11 @@ static REDIS_INTERVAL_SETS: RedisType = RedisType::new(
         aux_load: None,
         aux_save: None,
         aux_save_triggers: 0,
+
+        free_effort: None,
+        unlink: None,
+        copy: None,
+        defrag: None,
     },
 );
 
@@ -31,9 +37,25 @@ unsafe extern "C" fn free(value: *mut c_void) {
     Box::from_raw(value as *mut IntervalSet);
 }
 
+unsafe extern "C" fn rdb_save(rdb: *mut raw::RedisModuleIO, value: *mut c_void) {
+    let i_sets =  {&*(value as *mut IntervalSet) };
+    println!("Saving: {}", &i_sets.to_string());
+    raw::save_string(rdb, &i_sets.to_string());
+}
+
+pub extern "C" fn rdb_load(rdb: *mut raw::RedisModuleIO, _encver: c_int) -> *mut c_void {
+    let value = get_load_data_as_str(rdb);
+    Box::into_raw(Box::new(value)).cast::<libc::c_void>()
+}
+
+fn get_load_data_as_str(rdb: *mut raw::RedisModuleIO) -> IntervalSet {
+    let data = raw::load_string(rdb).unwrap();
+    return IntervalSet::from_str(&data.try_as_str().unwrap().to_string()).unwrap();
+}
+
 ///Retrieving a list of sets based on CLI input.
-fn get_sets<A: NextArg>(mut args: A) -> Result<Vec<Set>, RedisError> {
-    let mut sets = vec![];
+fn get_sets<A: NextArg>(mut args: A) -> Result<Sets, RedisError> {
+    let mut sets: Sets = Sets(vec![]);
     while let Ok(member) = args.next_string() {
         let set = Set {
             member,
@@ -41,7 +63,7 @@ fn get_sets<A: NextArg>(mut args: A) -> Result<Vec<Set>, RedisError> {
             min_score: args.next_i64()?,
             max_score: args.next_i64()?,
         };
-        sets.push(set);
+        sets.0.push(set);
     }
 
     Ok(sets)
@@ -68,12 +90,12 @@ fn is_in_score_range(set: &&Set, score: i64) -> bool {
 
 /// Adding a new interval set.
 /// This function is used for the iset.add command.
-fn is_add(ctx: &Context, args: Vec<String>) -> RedisResult {
+fn is_add(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
-    let key_name_arg = args.next_string()?;
+    let key_name_arg = args.next_arg()?;
 
     let sets = get_sets(&mut args)?;
-    if sets.is_empty() {
+    if sets.0.is_empty() {
         return Err(RedisError::WrongArity);
     }
 
@@ -81,7 +103,7 @@ fn is_add(ctx: &Context, args: Vec<String>) -> RedisResult {
     match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
             println!("[iset.add] Updating key '{}'", key_name_arg);
-            value.sets.extend(sets);
+            value.sets.0.extend(sets.0);
         }
         None => {
             println!("[iset.add] Adding a new key '{}'", key_name_arg);
@@ -96,9 +118,9 @@ fn is_add(ctx: &Context, args: Vec<String>) -> RedisResult {
 
 /// Deleting a interval set.
 /// This function is used for the iset.del command.
-fn is_del(ctx: &Context, args: Vec<String>) -> RedisResult {
+fn is_del(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
-    let key_name_arg = args.next_string()?;
+    let key_name_arg = args.next_arg()?;
     let members = get_members(&mut args)?;
     let key = ctx.open_key_writable(&key_name_arg);
     return match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
@@ -109,7 +131,7 @@ fn is_del(ctx: &Context, args: Vec<String>) -> RedisResult {
                 return REDIS_OK;
             }
             for member in members {
-                value.sets.retain(|set| set.member != member)
+                value.sets.0.retain(|set| set.member != member)
             }
             return REDIS_OK;
         }
@@ -119,19 +141,20 @@ fn is_del(ctx: &Context, args: Vec<String>) -> RedisResult {
 
 /// Retrieving interval set info.
 /// This function is used for the iset.get command.
-fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
+fn is_get(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
-    let key_name_arg = args.next_string()?;
+    let key_name_arg = args.next_arg()?;
     let key = ctx.open_key(&key_name_arg);
     match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
             println!("[is.get] Retrieving key '{}'", key_name_arg);
-            if let Ok(member) = args.next_string() {
+            if let Ok(member) = args.next_arg() {
                 println!("[is.get] Retrieving key '{}' members '{}'", key_name_arg, member);
                 let sets: Vec<_> = value
                     .sets
+                    .0
                     .iter()
-                    .filter(|set| set.member == member)
+                    .filter(|set| set.member == member.to_string())
                     .map(|set| {
                         vec![
                             set.min_score.clone().to_string(),
@@ -144,6 +167,7 @@ fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
             } else {
                 let sets: Vec<_> = value
                     .sets
+                    .0
                     .iter()
                     .filter(|_set| true)
                     .map(|set| {
@@ -164,9 +188,9 @@ fn is_get(ctx: &Context, args: Vec<String>) -> RedisResult {
 
 /// Searching for set in score range.
 /// This function is used for the iset.score command.
-fn is_score(ctx: &Context, args: Vec<String>) -> RedisResult {
+fn is_score(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
-    let key_name_arg = args.next_string()?;
+    let key_name_arg = args.next_arg()?;
     let score = args.next_i64()?;
     let key = ctx.open_key(&key_name_arg);
     println!("[iset.score] Retrieving key '{}' sets in score '{}'", key_name_arg, score);
@@ -174,6 +198,7 @@ fn is_score(ctx: &Context, args: Vec<String>) -> RedisResult {
         Some(value) => {
             let sets: Vec<_> = value
                 .sets
+                .0
                 .iter()
                 .filter(|set| is_in_score_range(set, score) == true)
                 .map(|set| set.member.clone())
@@ -186,9 +211,9 @@ fn is_score(ctx: &Context, args: Vec<String>) -> RedisResult {
 
 /// Searching for set not in score range.
 /// This function is used for the iset.not_score command.
-fn is_not_score(ctx: &Context, args: Vec<String>) -> RedisResult {
+fn is_not_score(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
-    let key_name_arg = args.next_string()?;
+    let key_name_arg = args.next_arg()?;
     let score = args.next_i64()?;
     let key = ctx.open_key(&key_name_arg);
 
@@ -197,6 +222,7 @@ fn is_not_score(ctx: &Context, args: Vec<String>) -> RedisResult {
         Some(value) => {
             let sets: Vec<_> = value
                 .sets
+                .0
                 .iter()
                 .filter(|set| is_in_score_range(set, score) == false)
                 .map(|set| set.member.clone())
@@ -223,19 +249,21 @@ redis_module! {
         ["iset.not_score", is_not_score, "readonly", 1, 1, 1],
     ],
 }
-
+/* 
 #[test]
 fn get_sets_empty() {
     let args = vec![];
     let sets = get_sets(args.into_iter());
     let sets = sets.expect("no sets");
-    assert_eq!(sets, vec![]);
+    assert_eq!(sets.0, vec![]);
 }
 
 #[test]
 fn get_sets_partial1() {
-    let args = vec!["member1".to_string()];
-    let sets = get_sets(args.into_iter());
+    let ctx = Context::dummy().ctx;
+    let args = vec![RedisString::create(ctx, "member1")];
+    let mut args = args.into_iter();
+    let sets = get_sets(&mut args);
     match sets.expect_err("should fail on partial arguments") {
         RedisError::WrongArity => {}
         _ => panic!("wrong error"),
@@ -244,7 +272,8 @@ fn get_sets_partial1() {
 
 #[test]
 fn get_sets_partial2() {
-    let args = vec!["member1".to_string(), "10".to_string()];
+    let ctx = Context::dummy().ctx;
+    let args = vec![RedisString::create(ctx, "member1"), RedisString::create(ctx, "10")];
     let sets = get_sets(args.into_iter());
     match sets.expect_err("should fail on partial arguments") {
         RedisError::WrongArity => {}
@@ -254,11 +283,12 @@ fn get_sets_partial2() {
 
 #[test]
 fn get_sets_single() {
-    let args = vec!["member1".to_string(), "10".to_string(), "20".to_string()];
+    let ctx = Context::dummy().ctx;
+    let args = vec![RedisString::create(ctx, "member1"), RedisString::create(ctx, "10"), RedisString::create(ctx, "20")];
     let sets = get_sets(args.into_iter());
     let sets = sets.expect("one member");
     assert_eq!(
-        sets,
+        sets.0,
         vec![Set {
             member: "member1".to_string(),
             min_score: 10,
@@ -269,18 +299,19 @@ fn get_sets_single() {
 
 #[test]
 fn get_sets_multi() {
+    let ctx = Context::dummy().ctx;
     let args = vec![
-        "member1".to_string(),
-        "10".to_string(),
-        "20".to_string(),
-        "member2".to_string(),
-        "30".to_string(),
-        "40".to_string(),
+        RedisString::create(ctx, "member1"),
+        RedisString::create(ctx, "10"),
+        RedisString::create(ctx, "20"),
+        RedisString::create(ctx, "member2"),
+        RedisString::create(ctx, "30"),
+        RedisString::create(ctx, "40"),
     ];
     let sets = get_sets(args.into_iter());
     let sets = sets.expect("multiple members");
     assert_eq!(
-        sets,
+        sets.0,
         vec![
             Set {
                 member: "member1".to_string(),
@@ -307,7 +338,8 @@ fn get_members_empty() {
 
 #[test]
 fn get_members_single() {
-    let args = vec!["member1".to_string()];
+    let ctx = Context::dummy().ctx;
+    let args = vec![RedisString::create(ctx, "member1")];
     let members = get_members(args.into_iter());
     let members = members.expect("one member");
     assert_eq!(
@@ -318,9 +350,10 @@ fn get_members_single() {
 
 #[test]
 fn get_members_multi() {
+    let ctx = Context::dummy().ctx;
     let args = vec![
-        "member1".to_string(),
-        "member2".to_string(),
+        RedisString::create(ctx, "member1"),
+        RedisString::create(ctx, "member2"),
     ];
     let members = get_members(args.into_iter());
     let members = members.expect("multiple members");
@@ -328,4 +361,4 @@ fn get_members_multi() {
         members,
         vec!["member1".to_string(), "member2".to_string()]
     );
-}
+}*/
