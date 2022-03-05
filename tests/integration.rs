@@ -179,6 +179,7 @@ is.del
 
     delete an existent set
     delete a non existence set
+    delete 1 member
 
 is.score
 
