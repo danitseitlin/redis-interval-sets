@@ -6,7 +6,7 @@ use redis_module::{raw, Context, NextArg, RedisError, RedisResult, REDIS_OK, Red
 use structs::{Set, Sets, IntervalSet};
 use std::os::raw::{c_int, c_void};
 use std::str::FromStr;
-
+static CANNOT_FIND_INTERVAL_SET_ERR: &str = "ERR Interval Set does not exist!";
 static REDIS_INTERVAL_SETS: RedisType = RedisType::new(
     "IntervlSt",
     0,
@@ -135,7 +135,7 @@ fn is_del(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
             }
             return REDIS_OK;
         }
-        None => Ok(().into()),
+        None => Err(RedisError::Str(CANNOT_FIND_INTERVAL_SET_ERR)).into(),
     };
 }
 
@@ -182,7 +182,7 @@ fn is_get(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
                 return Ok(sets.into());
             }
         }
-        None => Ok(().into()),
+        None => Err(RedisError::Str(CANNOT_FIND_INTERVAL_SET_ERR)).into(),
     }
 }
 
