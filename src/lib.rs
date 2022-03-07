@@ -6,7 +6,7 @@ use redis_module::{raw, Context, NextArg, RedisError, RedisResult, REDIS_OK, Red
 use structs::{Set, Sets, IntervalSet};
 use std::os::raw::{c_int, c_void};
 use std::str::FromStr;
-static CANNOT_FIND_INTERVAL_SET_ERR: &str = "ERR Interval Set does not exist!";
+
 static REDIS_INTERVAL_SETS: RedisType = RedisType::new(
     "IntervlSt",
     0,
@@ -130,12 +130,32 @@ fn is_del(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
                 key.delete()?;
                 return REDIS_OK;
             }
+            //if let Ok(member) = args.next_arg() {
+            else {
+                for member in &members {
+                    let sets: Vec<_> = value
+                        .sets
+                        .0
+                        .iter()
+                        .filter(|set| set.member == member.to_string())
+                        .map(|set| {
+                            vec![
+                                set.member.clone().to_string(),
+                            ]
+                        })
+                        .collect();
+                    if sets.is_empty() {
+                        return Err(RedisError::String(error_cannot_find_iset_member(member)));
+                    }
+                }
+            }
+            
             for member in members {
                 value.sets.0.retain(|set| set.member != member)
             }
             return REDIS_OK;
         }
-        None => Err(RedisError::Str(CANNOT_FIND_INTERVAL_SET_ERR)).into(),
+        None => Err(RedisError::String(error_cannot_find_iset_key(key_name_arg.try_as_str().unwrap()))).into(),
     };
 }
 
@@ -157,12 +177,15 @@ fn is_get(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
                     .filter(|set| set.member == member.to_string())
                     .map(|set| {
                         vec![
+                            set.member.clone().to_string(),
                             set.min_score.clone().to_string(),
                             set.max_score.clone().to_string(),
                         ]
                     })
                     .collect();
-
+                if sets.is_empty() {
+                    return Err(RedisError::String(error_cannot_find_iset_member(member.try_as_str().unwrap())))
+                }
                 return Ok(sets.into());
             } else {
                 let sets: Vec<_> = value
@@ -182,7 +205,7 @@ fn is_get(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
                 return Ok(sets.into());
             }
         }
-        None => Err(RedisError::Str(CANNOT_FIND_INTERVAL_SET_ERR)).into(),
+        None => Err(RedisError::String(error_cannot_find_iset_key(key_name_arg.try_as_str().unwrap()))).into(),
     }
 }
 
@@ -233,6 +256,13 @@ fn is_not_score(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
     };
 }
 
+pub fn error_cannot_find_iset_key(key_name: &str) -> String {
+    return format!("ERR Interval Set '{key_name}' does not exist!");
+}
+
+pub fn error_cannot_find_iset_member(member_name: &str) -> String {
+    return format!("ERR Interval Set member '{member_name}' does not exist!")
+}
 //////////////////////////////////////////////////////
 
 redis_module! {
