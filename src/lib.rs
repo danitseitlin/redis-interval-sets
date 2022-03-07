@@ -130,7 +130,6 @@ fn is_del(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
                 key.delete()?;
                 return REDIS_OK;
             }
-            //if let Ok(member) = args.next_arg() {
             else {
                 for member in &members {
                     let sets: Vec<_> = value
