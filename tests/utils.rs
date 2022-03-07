@@ -1,10 +1,12 @@
 use anyhow::{Context, Result};
 
 use redis::Connection;
+use redis_module::RedisValue;
 use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
 use std::time::Duration;
+use redis::RedisError;
 
 /// Ensure child process is killed both on normal exit and when panicking due to a failed test.
 pub struct ChildGuard {
@@ -85,4 +87,47 @@ pub fn get_redis_connection(port: u16) -> Result<Connection> {
             }
         }
     }
+}
+
+pub fn error_cannot_find_iset_key(key_name: &str) -> String {
+    return format!("An error was signalled by the server: Interval Set '{key_name}' does not exist!");
+}
+
+pub fn error_cannot_find_iset_member(member_name: &str) -> String {
+    return format!("An error was signalled by the server: Interval Set member '{member_name}' does not exist!")
+}
+
+pub fn is_okay(res: String) {
+    assert_eq!(
+        RedisValue::SimpleString(res),
+        RedisValue::SimpleString("OK".to_string())
+    )
+}
+
+pub fn add_interval_set(con: &mut Connection, key_name: String, sets: &Vec<String>) {
+    let result: Result<String, RedisError> = redis::cmd("iset.add")
+        .arg(key_name)
+        .arg(sets)
+        .query(con);
+    is_okay(result.unwrap());
+}
+
+pub fn get_interval_set(con: &mut Connection, key_name: String, members: Vec<String>) -> Result<Vec<Vec<String>>, RedisError> {
+    let res: Result<Vec<Vec<String>>, RedisError> = redis::cmd("iset.get").arg(key_name).arg(&members).query(con);
+    return res;
+}
+
+pub fn del_interval_set(con: &mut Connection, key_name: String, members: Vec<String>) -> Result<String, RedisError> {
+    let res: Result<String, RedisError> = redis::cmd("iset.del").arg(key_name).arg(&members).query(con);
+    return res;
+}
+
+pub fn is_score(con: &mut Connection, key_name: String, value: u16) -> Result<Vec<String>, RedisError> {
+    let res: Result<Vec<String>, RedisError> = redis::cmd("iset.score").arg(key_name).arg(&value).query(con);
+    return res;
+}
+
+pub fn is_not_score(con: &mut Connection, key_name: String, value: u16) -> Result<Vec<String>, RedisError> {
+    let res: Result<Vec<String>, RedisError> = redis::cmd("iset.not_score").arg(key_name).arg(&value).query(con);
+    return res;
 }
