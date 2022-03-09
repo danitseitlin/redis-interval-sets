@@ -5,6 +5,7 @@ use redis_module::native_types::RedisType;
 use redis_module::{raw, Context, NextArg, RedisError, RedisResult, REDIS_OK, RedisString};
 use structs::{Set, Sets, IntervalSet};
 use std::os::raw::{c_int, c_void};
+use std::ptr::null;
 use std::str::FromStr;
 
 static REDIS_INTERVAL_SETS: RedisType = RedisType::new(
@@ -103,7 +104,24 @@ fn is_add(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
     match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
             println!("[iset.add] Updating key '{}'", key_name_arg);
-            value.sets.0.extend(sets.0);
+            //let index = find_set(value.sets.0, )
+            //value.sets.0.extend(sets.0);
+            for item in sets.0 {
+                let does_set_exist = does_set_exist(value.sets.0.clone(), item.member.to_string());
+                let index = find_set(value.sets.0.clone(), item.member.to_string());
+
+                //If set by the given name exists
+                if does_set_exist == true {
+                    value.sets.0[index] = Set {
+                        member: item.member,
+                        min_score: item.min_score,
+                        max_score: item.max_score
+                    }
+                }
+                else {
+                    value.sets.0.push(item);
+                }
+            }
         }
         None => {
             println!("[iset.add] Adding a new key '{}'", key_name_arg);
@@ -114,6 +132,36 @@ fn is_add(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
     
 
     REDIS_OK
+}
+
+/// Checking if a key set exists in the list of sets
+/// # Arguments
+/// 
+/// * `sets` - A list of sets
+/// * `set_name` - A given set name to look for
+fn does_set_exist(sets: Vec<Set>, set_name: String) -> bool {
+    return sets
+        .iter()
+        .find(|set| set.member == set_name.to_string()) != None
+}
+
+/// Looking for a set index inside a list of given sets
+/// # Arguments
+/// 
+/// * `sets` - A list of sets
+/// * `set_name` - A given set name to look for
+fn find_set(sets: Vec<Set>, set_name: String) -> usize {
+    match sets
+        .iter()
+        .position(|set| set.member == set_name.to_string()) {
+            Some(v) => {
+                return v;
+            }
+            None => {
+                return usize::MAX;
+            }
+        }
+    
 }
 
 /// Deleting a interval set.
@@ -256,11 +304,11 @@ fn is_not_score(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
 }
 
 pub fn error_cannot_find_iset_key(key_name: &str) -> String {
-    return format!("ERR Interval Set '{key_name}' does not exist!");
+    return format!("ERR Interval Set '{key_name}' does not exist!", key_name = key_name);
 }
 
 pub fn error_cannot_find_iset_member(member_name: &str) -> String {
-    return format!("ERR Interval Set member '{member_name}' does not exist!")
+    return format!("ERR Interval Set member '{member_name}' does not exist!", member_name = member_name)
 }
 //////////////////////////////////////////////////////
 

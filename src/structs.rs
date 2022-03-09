@@ -1,8 +1,8 @@
 use std::fmt;
 use std::str::FromStr;
 use std::num::ParseIntError;
-#[derive(Debug, PartialEq)]
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Set {
     pub member: String,
     pub min_score: i64,
@@ -16,7 +16,7 @@ impl fmt::Display for Set {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Sets(pub Vec<Set>);
 
 impl fmt::Display for Sets {
