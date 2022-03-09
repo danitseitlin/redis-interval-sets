@@ -10,8 +10,8 @@ use redis::RedisError;
 
 /// Ensure child process is killed both on normal exit and when panicking due to a failed test.
 pub struct ChildGuard {
-    name: &'static str,
-    child: std::process::Child,
+    pub name: &'static str,
+    pub child: std::process::Child,
 }
 
 impl Drop for ChildGuard {
@@ -68,6 +68,10 @@ pub fn start_redis_server_with_module(module_name: &str, port: u16) -> Result<Ch
         }).with_context(|| format!("Error in raising redis-server => {}", module_path.as_str()))?;
 
     Ok(redis_server)
+}
+
+pub fn stop_redis_server(child: &mut ChildGuard) {
+    child.child.kill().expect("Ohh no!");
 }
 
 // Get connection to Redis
