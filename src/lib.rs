@@ -5,7 +5,6 @@ use redis_module::native_types::RedisType;
 use redis_module::{raw, Context, NextArg, RedisError, RedisResult, REDIS_OK, RedisString};
 use structs::{Set, Sets, IntervalSet};
 use std::os::raw::{c_int, c_void};
-use std::ptr::null;
 use std::str::FromStr;
 
 static REDIS_INTERVAL_SETS: RedisType = RedisType::new(

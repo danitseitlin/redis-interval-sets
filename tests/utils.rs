@@ -70,6 +70,10 @@ pub fn start_redis_server_with_module(module_name: &str, port: u16) -> Result<Ch
     Ok(redis_server)
 }
 
+pub fn stop_redis_server(child: &mut ChildGuard) {
+    child.child.kill().expect("Ohh no!");
+}
+
 // Get connection to Redis
 pub fn get_redis_connection(port: u16) -> Result<Connection> {
     let client = redis::Client::open(format!("redis://127.0.0.1:{}/", port))?;
