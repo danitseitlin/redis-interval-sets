@@ -33,7 +33,6 @@ fn test_add_interval_set_with_single_set() -> Result<()> {
         res,
         expected
     );
-    //stop_redis_server(&mut _guards[0]);
     stop_redis_server(&mut _guards[0]);
     Ok(())
 }
