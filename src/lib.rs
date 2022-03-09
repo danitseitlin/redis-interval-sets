@@ -104,8 +104,6 @@ fn is_add(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
     match key.get_value::<IntervalSet>(&REDIS_INTERVAL_SETS)? {
         Some(value) => {
             println!("[iset.add] Updating key '{}'", key_name_arg);
-            //let index = find_set(value.sets.0, )
-            //value.sets.0.extend(sets.0);
             for item in sets.0 {
                 let does_set_exist = does_set_exist(value.sets.0.clone(), item.member.to_string());
                 let index = find_set(value.sets.0.clone(), item.member.to_string());
