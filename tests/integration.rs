@@ -1,5 +1,6 @@
 use std::borrow::Borrow;
 use std::thread;
+use std::time::Duration;
 use std::vec;
 use std::process::Command;
 use crate::utils::{
@@ -314,7 +315,7 @@ fn test_save_and_load_db() -> Result<()> {
     let save = redis::cmd("save").query(&mut con).unwrap();
     is_okay(save);
     _guards[0].child.kill();
-    thread::sleep(10);
+    thread::sleep(Duration::from_secs(60));
     let mut _guards = vec![start_redis_server_with_module("intervalsets", port)
         .with_context(|| "failed to start redis server")?];
     let mut con =
