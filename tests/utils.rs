@@ -10,8 +10,8 @@ use redis::RedisError;
 
 /// Ensure child process is killed both on normal exit and when panicking due to a failed test.
 pub struct ChildGuard {
-    name: &'static str,
-    child: std::process::Child,
+    pub name: &'static str,
+    pub child: std::process::Child,
 }
 
 impl Drop for ChildGuard {

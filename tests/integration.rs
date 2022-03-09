@@ -1,11 +1,11 @@
 use std::borrow::Borrow;
 use std::vec;
-
+use std::process::Command;
 use crate::utils::{
     get_redis_connection, start_redis_server_with_module,
     add_interval_set, get_interval_set, del_interval_set,
     error_cannot_find_iset_key, error_cannot_find_iset_member,
-    is_score, is_not_score, is_okay
+    is_score, is_not_score, is_okay, ChildGuard
 };
 use anyhow::Context;
 use anyhow::Result;
@@ -31,6 +31,7 @@ fn test_add_interval_set_with_single_set() -> Result<()> {
         res,
         expected
     );
+    _guards[0].child.kill();
     Ok(())
 }
 
@@ -60,6 +61,7 @@ fn test_add_interval_set_with_multi_set() -> Result<()> {
         res,
         expected
     );
+    _guards[0].child.kill();
     Ok(())
 }
 
@@ -102,6 +104,7 @@ fn test_add_interval_set_with_set_and_add_more_sets() -> Result<()> {
         expected,
         "Verifying 2 sets addition"
     );
+    _guards[0].child.kill();
     Ok(())
 }
 
@@ -118,6 +121,7 @@ fn get_non_existent_iset() -> Result<()> {
         error,
         error_cannot_find_iset_key(key_name)
     );
+    _guards[0].child.kill();
     Ok(())
 }
 
@@ -148,6 +152,7 @@ fn get_existent_and_non_existent_iset_member() -> Result<()> {
         error.unwrap_err().to_string(),
         error_cannot_find_iset_member("member")
     );
+    _guards[0].child.kill();
     Ok(())
 }
 #[test]
@@ -163,6 +168,7 @@ fn del_non_existent_iset() -> Result<()> {
         error,
         error_cannot_find_iset_key(key_name)
     );
+    _guards[0].child.kill();
     Ok(())
 }
 
@@ -201,6 +207,7 @@ fn del_existent_iset() -> Result<()> {
         res5.unwrap_err().to_string(),
         error_cannot_find_iset_key(key_name)
     );
+    _guards[0].child.kill();
     Ok(())
 }
 
@@ -224,6 +231,7 @@ fn test_is_score() -> Result<()> {
         score_results.unwrap(),
         vec!["member1".to_string()]
     );
+    _guards[0].child.kill();
     Ok(())
 }
 
@@ -247,6 +255,7 @@ fn test_is_not_score() -> Result<()> {
         score_results.unwrap(),
         vec!["member1".to_string()]
     );
+    _guards[0].child.kill();
     Ok(())
 }
 
@@ -280,5 +289,41 @@ fn test_add_set_and_update_existing_set() -> Result<()> {
             ]
         ]
     );
+    _guards[0].child.kill();
+    Ok(())
+}
+
+
+// Always keep these tests last!
+#[test]
+fn test_save_and_load_db() -> Result<()> {
+    let redis_server = Command::new("rm")
+        .args(vec!["dump.rdb"])
+        .spawn();
+    let redis_server = Command::new("ls")
+        .args(vec!["dump.rdb"])
+        .spawn();
+    let port: u16 = REDIS_SERVER_PORT + 11;
+    let key_name = "my-key";
+    let mut _guards: Vec<ChildGuard> = vec![start_redis_server_with_module("intervalsets", port)
+        .with_context(|| "failed to start redis server")?];
+    let mut con =
+        get_redis_connection(port).with_context(|| "failed to connect to redis server")?;
+    add_interval_set(&mut con, key_name.to_string(), &vec!["member1".to_string(), "1".to_string(), "3".to_string()]);
+    let save = redis::cmd("save").query(&mut con).unwrap();
+    is_okay(save);
+    _guards[0].child.kill();
+    let mut _guards = vec![start_redis_server_with_module("intervalsets", port)
+        .with_context(|| "failed to start redis server")?];
+    let mut con =
+        get_redis_connection(port).with_context(|| "failed to connect to redis server")?;
+    let result = get_interval_set(&mut con, key_name.to_string(), vec![]);
+    assert_eq!(
+        result.unwrap(),
+        vec![
+            vec!["member1".to_string(), "1".to_string(), "3".to_string()]
+        ]
+    );
+    _guards[0].child.kill();
     Ok(())
 }
