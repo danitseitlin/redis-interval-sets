@@ -1,12 +1,14 @@
-use crate::utils::{is_okay, is_not_score};
+use std::borrow::Borrow;
+use std::vec;
+
 use crate::utils::{
     get_redis_connection, start_redis_server_with_module,
     add_interval_set, get_interval_set, del_interval_set,
-    error_cannot_find_iset_key, error_cannot_find_iset_member
+    error_cannot_find_iset_key, error_cannot_find_iset_member,
+    is_score, is_not_score, is_okay
 };
 use anyhow::Context;
 use anyhow::Result;
-use utils::is_score;
 mod utils;
 static REDIS_SERVER_PORT: u16 = 6379;
 
@@ -244,6 +246,39 @@ fn test_is_not_score() -> Result<()> {
     assert_eq!(
         score_results.unwrap(),
         vec!["member1".to_string()]
+    );
+    Ok(())
+}
+
+#[test]
+fn test_add_set_and_update_existing_set() -> Result<()> {
+    let port: u16 = REDIS_SERVER_PORT + 10;
+    let key_name = "my-key";
+    let mut _guards = vec![start_redis_server_with_module("intervalsets", port)
+        .with_context(|| "failed to start redis server")?];
+    let mut con =
+        get_redis_connection(port).with_context(|| "failed to connect to redis server")?;
+    add_interval_set(&mut con, key_name.to_string(), &vec!["member1".to_string(), "1".to_string(), "3".to_string()]);
+    let get_results = get_interval_set(&mut con, key_name.to_string(), vec![]);
+    assert_eq!(
+        get_results.unwrap(),
+        vec![
+            vec!["member1".to_string(), "1".to_string(), "3".to_string()]
+        ]
+    );
+    add_interval_set(&mut con, key_name.to_string(), &vec!["member1".to_string(), "1".to_string(), "10".to_string()]);
+    let get_results2 = get_interval_set(&mut con, key_name.to_string(), vec![]);
+    assert_eq!(
+        get_results2.borrow().clone().as_ref().unwrap().len(),
+        1usize
+    );
+    assert_eq!(
+        get_results2.borrow().clone().as_ref().unwrap(),
+        &vec![
+            vec![
+                "member1".to_string(), "1".to_string(), "10".to_string()
+            ]
+        ]
     );
     Ok(())
 }
