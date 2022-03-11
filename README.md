@@ -98,6 +98,15 @@ redis-server --loadmodule ./target/release/libintervalsets.so
 redis-server --loadmodule ./target/release/libintervalsets.dylib
 ```
 
+## Complexity
+| Command        | Time Complexity |
+| -------------- | --------------- |
+| iset.add       | O(n)            |
+| iset.get       | O(n)            |
+| iset.del       | O(n)            |
+| iset.score     | O(n)            |
+| iset.not_score | O(n)            |
+
 ## Client libraries :books:
 Some languages have client libraries that provide support for RedisIntervalSet's commands:
 

@@ -54,6 +54,7 @@ fn get_load_data_as_str(rdb: *mut raw::RedisModuleIO) -> IntervalSet {
 }
 
 ///Retrieving a list of sets based on CLI input.
+/// O(n) Time complexity (while n = sets)
 fn get_sets<A: NextArg>(mut args: A) -> Result<Sets, RedisError> {
     let mut sets: Sets = Sets(vec![]);
     while let Ok(member) = args.next_string() {
@@ -70,6 +71,7 @@ fn get_sets<A: NextArg>(mut args: A) -> Result<Sets, RedisError> {
 }
 
 ///Retrieving a list of set members based on CLI input.
+/// O(n) Time complexity (while n = members)
 fn get_members<A: NextArg>(mut args: A) -> Result<Vec<String>, RedisError> {
     let mut members = vec![];
 
@@ -81,6 +83,7 @@ fn get_members<A: NextArg>(mut args: A) -> Result<Vec<String>, RedisError> {
 }
 
 ///Checking if set is in given score range.
+/// O(1) Time Complexity
 fn is_in_score_range(set: &&Set, score: i64) -> bool {
     if set.min_score <= score && set.max_score >= score {
         return true;
@@ -90,6 +93,7 @@ fn is_in_score_range(set: &&Set, score: i64) -> bool {
 
 /// Adding a new interval set.
 /// This function is used for the iset.add command.
+/// O(n) Time complexity
 fn is_add(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
     let key_name_arg = args.next_arg()?;
@@ -121,6 +125,7 @@ fn is_add(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
             }
         }
         None => {
+            // O(1) time complexity
             println!("[iset.add] Adding a new key '{}'", key_name_arg);
             let value = IntervalSet { sets };
             key.set_value(&REDIS_INTERVAL_SETS, value)?;
@@ -163,6 +168,7 @@ fn find_set(sets: Vec<Set>, set_name: String) -> usize {
 
 /// Deleting a interval set.
 /// This function is used for the iset.del command.
+/// O(n) Time complexity
 fn is_del(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
     let key_name_arg = args.next_arg()?;
@@ -205,6 +211,7 @@ fn is_del(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
 
 /// Retrieving interval set info.
 /// This function is used for the iset.get command.
+/// O(n) Time complexity
 fn is_get(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
     let key_name_arg = args.next_arg()?;
@@ -255,6 +262,7 @@ fn is_get(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
 
 /// Searching for set in score range.
 /// This function is used for the iset.score command.
+/// O(n) Time complexity
 fn is_score(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
     let key_name_arg = args.next_arg()?;
@@ -278,6 +286,7 @@ fn is_score(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
 
 /// Searching for set not in score range.
 /// This function is used for the iset.not_score command.
+/// O(n) Time complexity
 fn is_not_score(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
     let key_name_arg = args.next_arg()?;
