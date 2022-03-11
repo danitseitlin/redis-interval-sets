@@ -94,7 +94,7 @@ fn is_in_score_range(set: &&Set, score: i64) -> bool {
 
 /// Adding a new interval set.
 /// This function is used for the iset.add command.
-/// O(n) Time complexity, while (n=sets)
+/// O(n) Time complexity
 fn is_add(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
     let mut args = args.into_iter().skip(1);
     let key_name_arg = args.next_arg()?;
